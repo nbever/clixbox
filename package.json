@@ -1,0 +1,30 @@
+{
+  "name": "clixbox-ui",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node dev-server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.6",
+    "@babel/polyfill": "^7.8.3",
+    "@babel/preset-env": "^7.8.6",
+    "@vue/component-compiler-utils": "^3.1.1",
+    "babel-preset-vue": "^2.0.2",
+    "eslint": "^6.8.0",
+    "node-sass": "^4.13.1",
+    "parcel": "^1.12.4",
+    "parcel-bundler": "^1.12.4",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "dependencies": {
+    "parcel-proxy-server": "^1.1.0",
+    "vue": "^2.6.11",
+    "vue-hot-reload-api": "^2.3.4",
+    "vue-material": "^1.0.0-beta-11"
+  }
+}
