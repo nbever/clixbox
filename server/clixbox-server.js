@@ -98,7 +98,7 @@ app.get('/game/:id', async (req, resp, next) => {
   reqHandler(async () => {
     const game = await gamesApi.getGame(req.params.id);
     return resp.json(game);
-  }. next);
+  }, next);
 });
 
 app.post('/game', async (req, resp, next) => {
@@ -123,25 +123,36 @@ app.delete('/game/:id', async (req, resp, next) => {
   }, next)
 });
 
-app.get('/game/:gameId/clix/:clixId', async (req, resp) => {
-
+app.get('/game/:gameId/clix/:clixId', async (req, resp, next) => {
+  reqHandler(async () => {
+    const {gameId, clixId} = req.params;
+    const clix = await gamesApi.getGameClix(gameId, clixId);
+    return resp.json(clix);
+  }, next);
 });
 
-app.put('/game/:gameId/clix/:clixId', async (req, resp) => {
-
+app.put('/game/:gameId/clix/:clixId', async (req, resp, next) => {
+  reqHandler(async () => {
+    const {gameId, clixId} = req.params;
+    const newClick = await gamesApi.updateGameClix(gameId, clixId, req.body);
+    return resp.json(newClick);
+  }, next);
 });
 
 // stuffs
 app.get('/abilities', async (req, resp) => {
-
+  const abilities = await abilityApi.getAbilities();
+  return resp.json(abilities);
 });
 
 app.get('/enhancements', async (req, resp) => {
-
+  const enhancements = await abilityApi.getEnhancements();
+  return resp.json(enhancements);
 });
 
 app.get('/keywords', async (req, resp) => {
-
+  const keywords = await abilityApi.getKeywords();
+  return resp.json(keywords);
 });
 
 app.listen(3000, () => {

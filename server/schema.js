@@ -54,6 +54,7 @@ const clixSchema = new mongoose.Schema({
   release: String,
   rangeTargets: Number,
   range: Number,
+  cost: Number,
   clix: [clickSchema],
   customAbilities: [abilitySchema],
   enhancements: [{type: mongoose.ObjectId, ref: 'Enhancements'}],
@@ -79,6 +80,7 @@ const gameSchema = new mongoose.Schema({
   teams: [teamSchema]
 });
 
+const Games = mongoose.model('Games', gameSchema);
 const Clix = mongoose.model('Clix', clixSchema);
 const Keywords = mongoose.model('Keywords', keywordSchema);
 const Abilities = mongoose.model('Abilities', abilitySchema);
@@ -86,6 +88,7 @@ const Enhancements = mongoose.model('Enhancements', enhancementSchema);
 
 module.exports = {
   Clix,
+  Games,
   Keywords,
   Abilities,
   Enhancements

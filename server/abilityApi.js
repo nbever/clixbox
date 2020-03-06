@@ -1,7 +1,17 @@
-const {Abilities, Keywords} = require('./schema');
+const {Abilities, Keywords, Enhancements} = require('./schema');
 
 const getAbilities = async function() {
   const list = Abilities.find();
+  return list;
+};
+
+const getEnhancements = async function() {
+  const list = Enhancements.find();
+  return list;
+};
+
+const getKeywords = async function() {
+  const list = Keywords.find();
   return list;
 };
 
@@ -21,5 +31,7 @@ const addKeyword = async function(keyword) {
 
 module.exports = {
   getAbilities,
-  addAbility
+  addAbility,
+  getEnhancements,
+  getKeywords
 };
