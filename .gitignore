@@ -2,3 +2,6 @@ dist/
 node_modules/
 .cache/
 .DS_Store
+db/
+mongodb/
+start_db.sh

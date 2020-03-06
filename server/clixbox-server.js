@@ -6,6 +6,7 @@ const fs = require('fs');
 
 const clixApi = require('./clixApi');
 const abilityApi = require('./abilityApi');
+const gamesApi = require('./gamesApi');
 
 const isNil = require('lodash/isNil');
 
@@ -59,12 +60,18 @@ app.get('/clix', async (req, resp) => {
   resp.json(rtn);
 });
 
-app.get('/clix/:id', async (req, resp) => {
-
+app.get('/clix/:id', async (req, resp, next) => {
+  reqHandler(async () => {
+    const clix = await clixApi.getAClix(req.params.id);
+    return resp.json(clix);
+  }, next);
 });
 
-app.put('/clix/:id', async (req, resp) => {
-
+app.put('/clix/:id', async (req, resp, next) => {
+  reqHandler(async () => {
+    const newClix = await clixApi.updateClix(req.params.id, req.body);
+    return resp.json(newClix);
+  }, next);
 });
 
 app.post('/clix', async (req, resp, next) => {
@@ -74,36 +81,53 @@ app.post('/clix', async (req, resp, next) => {
   }, next);
 });
 
-app.delete('/clix/:id', async (req, resp) => {
-
+app.delete('/clix/:id', async (req, resp, next) => {
+  reqHandler(async () => {
+    await clixApi.deleteAClix(req.params.id);
+    return resp.send('OK');
+  }, next)
 });
 
 // game
 app.get('/games', async (req, resp) => {
+  const games = await gamesApi.getGames();
+  return resp.json(games);
+});
+
+app.get('/game/:id', async (req, resp, next) => {
+  reqHandler(async () => {
+    const game = await gamesApi.getGame(req.params.id);
+    return resp.json(game);
+  }. next);
+});
+
+app.post('/game', async (req, resp, next) => {
+  reqHandler(async () => {
+    const newGame = await gamesApi.createGame(req.body);
+    return resp.json(newGame);
+  }, next);
+});
+
+app.put('/game/:id', async (req, resp, next) => {
+  reqHandler(async () => {
+    const newGame = await gamesApi.updateGame(
+      req.params.id, req.body);
+    return resp.json(newGame);
+  }, next);
+});
+
+app.delete('/game/:id', async (req, resp, next) => {
+  reqHandler(async () => {
+    await gamesApi.deleteGame(req.params.id);
+    return resp.send('OK');
+  }, next)
+});
+
+app.get('/game/:gameId/clix/:clixId', async (req, resp) => {
 
 });
 
-app.get('/game/:id', async (req, resp) => {
-
-});
-
-app.post('/game', async (req, resp) => {
-
-});
-
-app.put('/game/:id', async (req, resp) => {
-
-});
-
-app.delete('/game/:id', async (req, resp) => {
-
-});
-
-app.get('/game/clix/:id', async (req, resp) => {
-
-});
-
-app.put('/game/clix/:id', async (req, resp) => {
+app.put('/game/:gameId/clix/:clixId', async (req, resp) => {
 
 });
 

@@ -44,7 +44,7 @@ const keywordSchema = new mongoose.Schema({
   term: String,
   abilities: [extraAbilitySchema],
   keywords: [keywordPairSchema],
-  enhancements: [mongoose.ObjectId],
+  enhancements: [{type: mongoose.ObjectId, ref: 'Enhancements'}],
   text: String
 });
 
@@ -56,8 +56,27 @@ const clixSchema = new mongoose.Schema({
   range: Number,
   clix: [clickSchema],
   customAbilities: [abilitySchema],
-  enhancements: [mongoose.ObjectId],
-  keywords: [mongoose.ObjectId]
+  enhancements: [{type: mongoose.ObjectId, ref: 'Enhancements'}],
+  keywords: [keywordPairSchema]
+});
+
+const clixStatusSchema = new mongoose.Schema({
+  clix: {type: mongoose.ObjectId, ref: 'Clix'},
+  onClick: Number,
+  actionTokens: Number,
+  knockedOut: Boolean,
+  notes: String
+});
+
+const teamSchema = new mongoose.Schema({
+  name: String,
+  player: String,
+  roster: [clixStatusSchema]
+});
+
+const gameSchema = new mongoose.Schema({
+  name: String,
+  teams: [teamSchema]
 });
 
 const Clix = mongoose.model('Clix', clixSchema);
