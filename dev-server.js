@@ -15,7 +15,7 @@ const server = new ParcelProxyServer({
   proxies: {
     // add proxies here
     '/api': {
-      target: 'https://example.com/api'
+      target: 'http://localhost:3000/'
     }
   }
 });

@@ -48,40 +48,40 @@ const reqHandler = async (fx, next) => {
   }
 };
 
-app.post('/images', upload.single('picUpload'), async (req, resp) => {
+app.post('/api/images', upload.single('picUpload'), async (req, resp) => {
   const suffix = req.file.originalname.split('.')[1];
   fs.renameSync(req.file.path, `${req.file.path}.${suffix}`);
   resp.json({logo: `${req.file.filename}.${suffix}`});
 });
 
 // clix
-app.get('/clix', async (req, resp) => {
+app.get('/api/clix', async (req, resp) => {
   const rtn = await clixApi.getClix();
   resp.json(rtn);
 });
 
-app.get('/clix/:id', async (req, resp, next) => {
+app.get('/api/clix/:id', async (req, resp, next) => {
   reqHandler(async () => {
     const clix = await clixApi.getAClix(req.params.id);
     return resp.json(clix);
   }, next);
 });
 
-app.put('/clix/:id', async (req, resp, next) => {
+app.put('/api/clix/:id', async (req, resp, next) => {
   reqHandler(async () => {
     const newClix = await clixApi.updateClix(req.params.id, req.body);
     return resp.json(newClix);
   }, next);
 });
 
-app.post('/clix', async (req, resp, next) => {
+app.post('/api/clix', async (req, resp, next) => {
   reqHandler(async () => {
     const newClix = await clixApi.createClix(req.body);
     return resp.json(newClix);
   }, next);
 });
 
-app.delete('/clix/:id', async (req, resp, next) => {
+app.delete('/api/clix/:id', async (req, resp, next) => {
   reqHandler(async () => {
     await clixApi.deleteAClix(req.params.id);
     return resp.send('OK');
@@ -89,26 +89,26 @@ app.delete('/clix/:id', async (req, resp, next) => {
 });
 
 // game
-app.get('/games', async (req, resp) => {
+app.get('/api/games', async (req, resp) => {
   const games = await gamesApi.getGames();
   return resp.json(games);
 });
 
-app.get('/game/:id', async (req, resp, next) => {
+app.get('/api/game/:id', async (req, resp, next) => {
   reqHandler(async () => {
     const game = await gamesApi.getGame(req.params.id);
     return resp.json(game);
   }, next);
 });
 
-app.post('/game', async (req, resp, next) => {
+app.post('/api/game', async (req, resp, next) => {
   reqHandler(async () => {
     const newGame = await gamesApi.createGame(req.body);
     return resp.json(newGame);
   }, next);
 });
 
-app.put('/game/:id', async (req, resp, next) => {
+app.put('/api/game/:id', async (req, resp, next) => {
   reqHandler(async () => {
     const newGame = await gamesApi.updateGame(
       req.params.id, req.body);
@@ -116,14 +116,14 @@ app.put('/game/:id', async (req, resp, next) => {
   }, next);
 });
 
-app.delete('/game/:id', async (req, resp, next) => {
+app.delete('/api/game/:id', async (req, resp, next) => {
   reqHandler(async () => {
     await gamesApi.deleteGame(req.params.id);
     return resp.send('OK');
   }, next)
 });
 
-app.get('/game/:gameId/clix/:clixId', async (req, resp, next) => {
+app.get('/api/game/:gameId/clix/:clixId', async (req, resp, next) => {
   reqHandler(async () => {
     const {gameId, clixId} = req.params;
     const clix = await gamesApi.getGameClix(gameId, clixId);
@@ -131,7 +131,7 @@ app.get('/game/:gameId/clix/:clixId', async (req, resp, next) => {
   }, next);
 });
 
-app.put('/game/:gameId/clix/:clixId', async (req, resp, next) => {
+app.put('/api/game/:gameId/clix/:clixId', async (req, resp, next) => {
   reqHandler(async () => {
     const {gameId, clixId} = req.params;
     const newClick = await gamesApi.updateGameClix(gameId, clixId, req.body);
@@ -140,17 +140,17 @@ app.put('/game/:gameId/clix/:clixId', async (req, resp, next) => {
 });
 
 // stuffs
-app.get('/abilities', async (req, resp) => {
+app.get('/api/abilities', async (req, resp) => {
   const abilities = await abilityApi.getAbilities();
   return resp.json(abilities);
 });
 
-app.get('/enhancements', async (req, resp) => {
+app.get('/api/enhancements', async (req, resp) => {
   const enhancements = await abilityApi.getEnhancements();
   return resp.json(enhancements);
 });
 
-app.get('/keywords', async (req, resp) => {
+app.get('/api/keywords', async (req, resp) => {
   const keywords = await abilityApi.getKeywords();
   return resp.json(keywords);
 });

@@ -54,7 +54,7 @@ const clixSchema = new mongoose.Schema({
   release: String,
   rangeTargets: Number,
   range: Number,
-  cost: Number,
+  cost: String,
   clix: [clickSchema],
   customAbilities: [abilitySchema],
   enhancements: [{type: mongoose.ObjectId, ref: 'Enhancements'}],

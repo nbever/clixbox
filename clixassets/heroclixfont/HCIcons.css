@@ -1,0 +1,93 @@
+@font-face {
+    font-family: 'HCIcons';
+    src: url('fonts/hcicons.eot');
+    src: url('fonts/hcicons.eot?#iefix') format('embedded-opentype'),
+         url('fonts/hcicons.woff2') format('woff2'),
+         url('fonts/hcicons.woff') format('woff'),
+         url('fonts/hcicons.ttf')  format('truetype'),
+         url('fonts/hcicons.svg#HCIcons') format('svg');
+}
+
+.hc-icon-swim:before {
+  content: '\0061';
+}
+
+.hc-icon-range:before {
+  content: '\005c';
+}
+
+.hc-icon-dot:before {
+  content: '\0031';
+}
+
+.hc-icon-f:before {
+  content: '\0032';
+}
+
+.hc-icon-inner-o:before {
+  content: '\0033';
+}
+
+.hc-icon-inf:before {
+  content: '\0034';
+}
+
+.hc-icon-inf-arrow:before {
+  content: '\0035';
+}
+
+.hc-icon-range-expert:before {
+  content: '\0044';
+}
+
+.hc-icon-double-fist:before {
+  content: '\0046';
+}
+
+.hc-icon-target:before {
+  content: '\0049';
+}
+
+.hc-icon-indomitable:before {
+  content: '\0053';
+}
+
+.hc-icon-colossal:before {
+  content: '\0063';
+}
+
+.hc-icon-damage:before {
+  content: '\0064';
+}
+
+.hc-icon-attack:before {
+  content: '\0066';
+}
+
+.hc-icon-large:before {
+  content: '\0067';
+}
+
+.hc-icon-run:before {
+  content: '\0069';
+}
+
+.hc-icon-move:before {
+  content: '\006d';
+}
+
+.hc-icon-passenger:before {
+  content: '\0072';
+}
+
+.hc-icon-defend:before {
+  content: '\0073';
+}
+
+.hc-icon-flight:before {
+  content: '\0077';
+}
+
+.hc-icon-wheel:before {
+  content: '\0056';
+}
