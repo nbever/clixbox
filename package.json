@@ -22,7 +22,9 @@
     "vue-template-compiler": "^2.6.11"
   },
   "dependencies": {
+    "font-blast": "^0.7.0",
     "parcel-proxy-server": "^1.1.0",
+    "svgfont2svgicons": "^2.0.0",
     "vue": "^2.6.11",
     "vue-hot-reload-api": "^2.3.4",
     "vue-material": "^1.0.0-beta-11",

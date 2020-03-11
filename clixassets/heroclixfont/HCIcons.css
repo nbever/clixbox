@@ -1,11 +1,19 @@
 @font-face {
     font-family: 'HCIcons';
-    src: url('fonts/hcicons.eot');
-    src: url('fonts/hcicons.eot?#iefix') format('embedded-opentype'),
-         url('fonts/hcicons.woff2') format('woff2'),
-         url('fonts/hcicons.woff') format('woff'),
-         url('fonts/hcicons.ttf')  format('truetype'),
-         url('fonts/hcicons.svg#HCIcons') format('svg');
+    src: url('clixassets/heroclixfont/fonts/hcicons.eot');
+    src: url('clixassets/heroclixfont/fonts/hcicons.eot?#iefix') format('embedded-opentype'),
+         url('clixassets/heroclixfont/fonts/hcicons.woff2') format('woff2'),
+         url('clixassets/heroclixfont/fonts/hcicons.woff') format('woff'),
+         url('clixassets/heroclixfont/fonts/hcicons.ttf')  format('truetype'),
+         url('clixassets/heroclixfont/fonts/hcicons.svg#HCIcons') format('svg');
+}
+
+.hc {
+  font-family: 'HCIcons' !important;
+}
+
+.hc-icon-star:before {
+  content: '\002a';
 }
 
 .hc-icon-swim:before {
@@ -24,15 +32,15 @@
   content: '\0032';
 }
 
-.hc-icon-inner-o:before {
+.hc-icon-ring:before {
   content: '\0033';
 }
 
-.hc-icon-inf:before {
+.hc-icon-inf-no-arrow:before {
   content: '\0034';
 }
 
-.hc-icon-inf-arrow:before {
+.hc-icon-inf:before {
   content: '\0035';
 }
 
@@ -82,6 +90,10 @@
 
 .hc-icon-defend:before {
   content: '\0073';
+}
+
+.hc-icon-tiny:before {
+  content: '\0074';
 }
 
 .hc-icon-flight:before {

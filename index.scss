@@ -1,12 +1,47 @@
 @import "~vue-material/dist/theme/engine"; // Import the theme engine
+@import './clixassets/heroclixfont/HCIcons';
+@import './clixassets/myicons-v1.0/style';
+@import './variables';
 
 @include md-register-theme("default", (
-  primary: #1d256f, // The primary color of your brand
-  accent: #1a11e8 // The secondary color of your brand
+  primary: #7f7f7f, // The primary color of your brand
+  accent: #DDDDDD // The secondary color of your brand
 ));
 
 @import "~vue-material/dist/theme/all"; // Apply the theme
 
-.test {
-	color: green;
+div {
+  transition: 500ms;
+  color: $dark_gray;
+}
+
+.rounded {
+  border-radius: 6px;
+}
+
+.form {
+  padding: 12px;
+}
+
+.title {
+  font-size: 24px;
+  width: 100%;
+  padding-bottom: 8px;
+  border-bottom: 2px solid $dark_gray;
+}
+
+.flex {
+  display: flex;
+}
+
+.row {
+  flex-direction: row;
+}
+
+.column {
+  flex-direction: column;
+}
+
+.middle {
+  text-align: center;
 }
