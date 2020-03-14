@@ -8,6 +8,8 @@
       <div v-if="isIconNull(enhancement)" 
         :class="`overlay hc hc-icon-${enhancement.icon.toLowerCase()}`">
       </div>
+      <div class="delete mycons-cancel-circle" @click="deleteEnhancement(enhancement)">
+      </div>
 
       <div v-if="canChange(enhancement)">
         <md-menu md-size="auto">
@@ -16,8 +18,11 @@
           </div>
 
           <md-menu-content>
-            <md-menu-item v-for="(option, index) in menuItems" class="menu-item">
-              <div class="flex row" @click="enhancementChanged(option, index)">
+            <md-menu-item v-for="(option, index) in menuItems" 
+              class="menu-item"
+              @click="enhancementChangedInternal(option, index)"
+            >
+              <div class="flex row">
                 <div 
                   class="orb-small border" 
                   :style="{backgroundColor: option.color}"
@@ -49,6 +54,7 @@
 
 <script>
   import isNil from 'lodash/isNil';
+  import clone from 'lodash/clone';
 
   export default {
     name: 'enhancement-setter',
@@ -76,9 +82,14 @@
     },
     methods: {
       addEnhancement: function() {
-        this.enhancementChanged(
-          {}
-        );
+        const copy = clone(this.enhancements);
+        copy.push(this.menuItems[0]);
+        this.enhancementChanged(copy);
+      },
+      enhancementChangedInternal: function(enhancement, index) {
+        const copy = clone(this.enhancements);
+        copy[index] = enhancement;
+        this.enhancementChanged(copy);
       },
       isIconNull: function(enhancement) {
         return !isNil(enhancement) &&
@@ -88,6 +99,13 @@
         return isNil(enhancement) || 
           isNil(enhancement.locked) ||
           enhancement.locked === false;
+      },
+      deleteEnhancement: function(enhancement) {
+        const newList = this.enhancements.filter((e) => {
+          return e !== enhancement;
+        });
+
+        this.enhancementChanged(newList);
       }
     }
   }
@@ -98,6 +116,21 @@
 
 .center {
   align-items: center;
+}
+
+.delete {
+  position: absolute;
+  top: 0px;
+  font-size: 12px;
+  right: -7px;
+  background-color: white;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 1px;
+
+  &:hover {
+    background-color: $gray;
+  }
 }
 
 .little-text {
@@ -114,7 +147,7 @@
 }
 
 .clicker {
-  font-size: 16px;
+  font-size: 14px;
   position: absolute;
   bottom: -8px;
   right: -12px;
@@ -145,9 +178,10 @@
 
 .overlay {
   position: absolute;
-  top: 3px;
-  left: 0px;
-  color: $dark_gray;
+  top: 5px;
+  font-size: 24px;
+  left: 2px;
+  color: black;
 }
 
 .menu-overlay {

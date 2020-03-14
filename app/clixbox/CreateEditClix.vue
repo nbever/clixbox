@@ -201,14 +201,8 @@
           this.badgeKeywords[key] = keyword;
         }
       },
-      enhancementChanged: function(enhancement, index) {
-        if (isNil(index)) {
-          this.enhancements.push({
-            type: MOVE,
-            color: GRAY,
-            icon: 'star'
-          });
-        }
+      enhancementChanged: function(enhancements) {
+        this.enhancements = enhancements;
       }
     }
   }
