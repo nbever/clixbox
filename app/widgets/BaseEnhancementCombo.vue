@@ -30,6 +30,7 @@
     context.keywords.forEach(async (k) => {
       const keyword = await context.getKeywordByName(k);
       badges.push({
+        ...keyword,
         id: keyword._id,
         label: keyword.term,
         iconClass: `hc-icon-${keyword.term.toLowerCase()}`

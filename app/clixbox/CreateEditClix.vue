@@ -85,10 +85,19 @@
 
         <div class="flex row">
           <enhancement-setter
-            :enhancements="enhancements"
+            :enhancements="currentMoveEnhancements"
             :possibleEnhancements="moveEnhancements"
             :enhancementChanged="enhancementChanged"
             categoryClass="hc hc-icon-run"
+          >
+          </enhancement-setter>
+        </div>
+        <div class="flex row">
+          <enhancement-setter
+            :enhancements="currentTargetEnhancements"
+            :possibleEnhancements="targetEnhancements"
+            :enhancementChanged="enhancementChanged"
+            categoryClass="hc hc-icon-target"
           >
           </enhancement-setter>
         </div>
@@ -112,6 +121,61 @@
   } from '../../constants';
 
   import isNil from 'lodash/isNil';
+  import clone from 'lodash/clone';
+
+  const rationalizeEnhancementList = async (badgeKeywords, enhancements, api) => {
+
+    const requiredList = await Promise.all(Object.values(badgeKeywords)
+      .filter((val) => {
+        if (isNil(val) || isNil(val.enhancements) || val.enhancements.length ===0) {
+          return false;
+        }
+        return true;
+      })
+      .reduce((list, enhancementList) => {
+        list.push(...enhancementList.enhancements);
+        return list;
+      }, [])
+      .map(async (liteE) => {
+        const alreadyGrabbed = enhancements.find((fullE) => {
+          return liteE === fullE._id;
+        });
+
+        if (!isNil(alreadyGrabbed)) {
+          return alreadyGrabbed;
+        }
+
+        const newAndFulle = await api.getEnhancement(liteE);
+        return newAndFulle;
+      }));
+
+    const lockedEnhancements = requiredList.map((lockMe) => {
+        const c = clone(lockMe);
+        c.locked = true;
+        return c;
+      });
+
+    const oldEnhancements = enhancements
+      .filter((oldE) => {
+        const isItLocked = lockedEnhancements.find((lE) => {
+          return lE._id === oldE._id;
+        });
+
+        if (!isNil(isItLocked)) {
+          return false;
+        }
+
+        return true;
+      })
+      .map((leftover) => {
+        const c = clone(leftover);
+        c.locked = false;
+        return c;
+      });
+
+    const fullList = [...lockedEnhancements, ...oldEnhancements];
+    return fullList;
+  };
 
   export default {
     components: {
@@ -157,6 +221,16 @@
           {id: '2', label: 'Large', iconClass: 'hc-icon-large'},
           {id: '3', label: 'Colossal', iconClass: 'hc-icon-colossal'}
         ];
+      },
+      currentMoveEnhancements: function() {
+        return this.enhancements.filter((e) => {
+          return e.type === MOVE;
+        });
+      },
+      currentTargetEnhancements: function() {
+        return this.enhancements.filter((e) => {
+          return e.type === TARGET;
+        });
       }
     },
     data: function() {
@@ -197,8 +271,11 @@
         }
       },
       badgeSelected: function(key) {
-        return (keyword) => {
+        return async (keyword) => {
+        
           this.badgeKeywords[key] = keyword;
+          this.enhancements = await rationalizeEnhancementList(this.badgeKeywords, 
+            this.enhancements, this);
         }
       },
       enhancementChanged: function(enhancements) {

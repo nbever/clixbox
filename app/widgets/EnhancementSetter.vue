@@ -3,12 +3,12 @@
     <div class="classifier orb">
       <div :class="categoryClass" :style="{paddingTop: '12px'}"></div>
     </div>
-    <div v-for="enhancement in enhancements" 
+    <div v-for="(enhancement, index) in enhancements" 
       class="orb-small border" :style="{backgroundColor: enhancement.color}">
       <div v-if="isIconNull(enhancement)" 
         :class="`overlay hc hc-icon-${enhancement.icon.toLowerCase()}`">
       </div>
-      <div class="delete mycons-cancel-circle" @click="deleteEnhancement(enhancement)">
+      <div v-if="canChange(enhancement)" class="delete mycons-cancel-circle" @click="deleteEnhancement(enhancement)">
       </div>
 
       <div v-if="canChange(enhancement)">
@@ -18,7 +18,7 @@
           </div>
 
           <md-menu-content>
-            <md-menu-item v-for="(option, index) in menuItems" 
+            <md-menu-item v-for="option in menuItems" 
               class="menu-item"
               @click="enhancementChangedInternal(option, index)"
             >
@@ -120,7 +120,7 @@
 
 .delete {
   position: absolute;
-  top: 0px;
+  top: -1px;
   font-size: 12px;
   right: -7px;
   background-color: white;
@@ -182,6 +182,10 @@
   font-size: 24px;
   left: 2px;
   color: black;
+}
+
+.hc-icon-inf {
+  font-size: 14px;
 }
 
 .menu-overlay {
