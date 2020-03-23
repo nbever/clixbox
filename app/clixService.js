@@ -47,12 +47,16 @@ const ClixApi = {
             return e.type === name;
           });
         },
-        getAbility: async function(id) {
+        getAbilities: async function() {
           if (isNil(abilities)) {
             abilities = await genericLoader(
               '/api/abilities', this.$root);
           }
 
+          return abilities;
+        },
+        getAbility: async function(id) {
+          const abilities = await this.getAbilities();
           return abilities[id];          
         },
         getKeywords: async function() {

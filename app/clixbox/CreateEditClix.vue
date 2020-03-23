@@ -87,7 +87,7 @@
           <enhancement-setter
             :enhancements="currentMoveEnhancements"
             :possibleEnhancements="moveEnhancements"
-            :enhancementChanged="enhancementChanged"
+            :enhancementChanged="moveEnhancementChanged"
             categoryClass="hc hc-icon-run"
           >
           </enhancement-setter>
@@ -96,10 +96,22 @@
           <enhancement-setter
             :enhancements="currentTargetEnhancements"
             :possibleEnhancements="targetEnhancements"
-            :enhancementChanged="enhancementChanged"
+            :enhancementChanged="targetEnhancementChanged"
             categoryClass="hc hc-icon-target"
           >
           </enhancement-setter>
+        </div>
+
+        <div class="flex row">
+          <click-builder 
+            :clicks="clicks"
+            :clicksChanged="clicksChanged"
+            :moveBadge="badgeKeywords.move"
+            :attackBadge="badgeKeywords.range"
+            :defenseBadge="badgeKeywords.defense"
+            :damageBadge="badgeKeywords.damage"
+          >
+          </click-builder>
         </div>
       </div>
     </div>
@@ -111,21 +123,55 @@
   import ClixTextField from '../widgets/ClixTextField';
   import BaseEnhancementCombo from '../widgets/BaseEnhancementCombo';
   import EnhancementSetter from '../widgets/EnhancementSetter';
+  import ClickBuilder from '../widgets/ClickBuilder';
   import {
     SWIM,
     FLIGHT,
     MOVE,
     TARGET,
     INDOMITABLE,
-    GRAY
+    GRAY,
+    GIANT_REACH,
+    GREAT_SIZE,
+    COLOSSAL_STAMINA
   } from '../../constants';
 
   import isNil from 'lodash/isNil';
   import clone from 'lodash/clone';
 
+  const ID_TINY = 'tiny';
+  const ID_LARGE = 'large';
+  const ID_COLOSSAL = 'colossal';
+
   const rationalizeEnhancementList = async (badgeKeywords, enhancements, api) => {
 
-    const requiredList = await Promise.all(Object.values(badgeKeywords)
+    const fixedKeywords = await Promise.all(Object.values(badgeKeywords).map(async (bVal) => {
+
+      if (isNil(bVal)) {
+        return bVal;
+      }
+
+      const enhancementList = isNil(bVal.enhancements) ?
+        [] : bVal.enhancements;
+
+      if (bVal.id === ID_LARGE || bVal.id === ID_COLOSSAL) {
+        const size = await api.getKeywordByName(GREAT_SIZE);
+        const reach = await api.getKeywordByName(GIANT_REACH);
+        enhancementList.push(...size.enhancements, ...reach.enhancements);
+      }
+
+      if (bVal.id === ID_COLOSSAL) {
+        const stamina = await api.getKeywordByName(COLOSSAL_STAMINA);
+        enhancementList.push(...stamina.enhancements);
+      }
+
+      return {
+        ...bVal,
+       enhancements: enhancementList 
+      };
+    }));
+
+    const requiredList = await Promise.all(Object.values(fixedKeywords)
       .filter((val) => {
         if (isNil(val) || isNil(val.enhancements) || val.enhancements.length ===0) {
           return false;
@@ -133,7 +179,16 @@
         return true;
       })
       .reduce((list, enhancementList) => {
-        list.push(...enhancementList.enhancements);
+        const uniqueOnes = enhancementList.enhancements.filter((newE) => {
+          const dupe = list.find((listItem) => {
+            return newE === listItem;
+          });
+
+          return isNil(dupe);
+        });
+
+        list.push(...uniqueOnes);
+
         return list;
       }, [])
       .map(async (liteE) => {
@@ -182,7 +237,8 @@
       GoHome,
       ClixTextField,
       BaseEnhancementCombo,
-      EnhancementSetter
+      EnhancementSetter,
+      ClickBuilder
     },
     computed: {
       showRangeField: function() {
@@ -217,9 +273,9 @@
       },
       damageBadges: function() {
         return [
-          {id: '1', label: 'Tiny', iconClass: 'hc-icon-tiny'},
-          {id: '2', label: 'Large', iconClass: 'hc-icon-large'},
-          {id: '3', label: 'Colossal', iconClass: 'hc-icon-colossal'}
+          {id: ID_TINY, label: 'Tiny', iconClass: 'hc-icon-tiny'},
+          {id: ID_LARGE, label: 'Large', iconClass: 'hc-icon-large'},
+          {id: ID_COLOSSAL, label: 'Colossal', iconClass: 'hc-icon-colossal'}
         ];
       },
       currentMoveEnhancements: function() {
@@ -252,6 +308,7 @@
           damage: null,
           range: null
         },
+        clicks: [],
         enhancements: [],
         possibleEnhancements: []
       };
@@ -274,12 +331,27 @@
         return async (keyword) => {
         
           this.badgeKeywords[key] = keyword;
+
           this.enhancements = await rationalizeEnhancementList(this.badgeKeywords, 
             this.enhancements, this);
         }
       },
-      enhancementChanged: function(enhancements) {
-        this.enhancements = enhancements;
+      moveEnhancementChanged: function(enhancements) {
+        const keepers = this.enhancements.filter((realE) => {
+          return realE.type === TARGET;
+        });
+
+        this.enhancements = [...keepers, ...enhancements];
+      },
+      targetEnhancementChanged: function(enhancements) {
+        const keepers = this.enhancements.filter((realE) => {
+          return realE.type === MOVE;
+        });
+
+        this.enhancements = [...keepers, ...enhancements];
+      },
+      clicksChanged: function(newClicks) {
+        this.clicks = newClicks;
       }
     }
   }
