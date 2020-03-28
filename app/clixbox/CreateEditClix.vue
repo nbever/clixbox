@@ -351,7 +351,7 @@
         this.enhancements = [...keepers, ...enhancements];
       },
       clicksChanged: function(newClicks) {
-        this.clicks = newClicks;
+        this.clicks.splice(0, this.clicks.length, ...newClicks);
       }
     }
   }

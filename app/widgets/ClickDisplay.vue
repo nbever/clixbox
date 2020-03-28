@@ -1,13 +1,14 @@
 <template>
   <div class="flex row" @click="toggleEditMode">
     <div :style="color" class="value-box">
-      <div v-if="!editMode">{{clickValue}}</div>
+      <div :style="{color: 'inherit'}" v-if="!editMode">{{clickValue}}</div>
       <input
         v-if="editMode"
         class="no-outline"
         type="number"
-        :value="value"
+        :value="value.value"
         @keyup="valueChanged"
+        @focusout="focusOut"
         min="0"
         max="20"
       >
@@ -26,9 +27,13 @@
           >
             <div class="flex row">
               <div 
+                v-if="ability._id !== 'KO'"
                 class="orb-small border" 
                 :style="{backgroundColor: ability.color}"
               >
+              </div>
+              <div v-if="ability._id === 'KO'" class="ko orb-small">
+                KO
               </div>
               <div>
                 <div class="ability-title">{{ability.action}}</div>
@@ -50,7 +55,7 @@ import isNil from 'lodash/isNil';
 export default {
   name: 'click-display',
   props: {
-    value: Number,
+    value: Object,
     ability: Object,
     abilities: Array,
     editable: Boolean,
@@ -64,20 +69,45 @@ export default {
   },
   computed: {
     color: function() {
-      if (isNil(this.ability)) {
-        return {};
+      if (isNil(this.value.ability)) {
+        return {
+        };
       }
 
       return {
-        backgroundColor: this.ability.color
+        backgroundColor: this.value.ability.color,
+        color: 'white'
       };
     },
     clickValue: function() {
-      if (this.value === -1) {
+      if (this.value.value === -1) {
         return 'KO';
       }
 
-      return this.value;
+      return this.value.value;
+    },
+    augmentedAbilities: function() {
+      return [
+        {
+          _id: 'NONE',
+          color: '#ffffff',
+          action: 'None',
+          text: 'No special abilities'
+        },
+        {
+          _id: 'KO',
+          color: '#ffffff',
+          action: 'KO',
+          text: 'Knocked Out'
+        },
+        {
+          _id: 'CUST',
+          color: '#ffffff',
+          action: 'Custom Ability',
+          text: 'See the custom abilities description.'
+        },
+        ...this.abilities
+      ];
     }
   },
   methods: {
@@ -98,11 +128,17 @@ export default {
     abilityChangedInternally: function(newAbility) {
       
       this.showAbilities = false;
-      this.onChange(newAbility, this.value);
+      this.onChange(newAbility, this.value.value);
     },
     valueChanged: function($e) {
-      this.onChange(this.ability, parseInt($e.target.value));
+      this.onChange(this.value.ability, parseInt($e.target.value));
+    },
+    focusOut: function() {
+      this.editMode = false;
     }
+  },
+  updated: function() {
+    console.log('Click display updated');
   }
 }
 </script>
@@ -115,6 +151,11 @@ export default {
   font-weight: bolder;
   text-transform: capitalize;
   font-size: 12px;
+}
+
+.ko {
+  font-weight: bolder;
+  color: $red;
 }
 
 .little-text {
@@ -133,11 +174,13 @@ export default {
   text-align: center;
   height: 28px;
   min-width: 24px;
+  margin: 2px;
 }
 
 .clicker {
   cursor: pointer;
   opacity: 0.7;
+  line-height: 2.3;
 
   &:hover {
     opacity: 1.0;

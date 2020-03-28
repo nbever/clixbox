@@ -97,7 +97,11 @@ export default {
     },
     clickChanged: function(index) {
       return (newItem, key) => {
-
+        const cloner = this.clicks.map((c) => {
+          return clone(c);
+        });
+        cloner[index][key] = newItem;
+        this.clicksChanged(cloner);
       };
     }
   }
@@ -111,6 +115,7 @@ export default {
   text-align: center;
   min-height: 28px;
   min-width: 24px;
+  margin: 2px;
 }
 
 .legend {

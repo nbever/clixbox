@@ -5,28 +5,28 @@
     </div>
     <click-display 
       :editable="true" 
-      :value="move.value" 
+      :value="move" 
       :abilities="moveAbilities"
       :onChange="clickChanged('move')"
     >
     </click-display>
     <click-display 
       :editable="true" 
-      :value="attack.value"
+      :value="attack"
       :abilities="attackAbilities"
       :onChange="clickChanged('attack')"
     >
     </click-display>
     <click-display 
       :editable="true" 
-      :value="defend.value"
+      :value="defend"
       :abilities="defenseAbilities"
       :onChange="clickChanged('defend')"
     >
     </click-display>
     <click-display 
       :editable="true" 
-      :value="damage.value"
+      :value="damage"
       :abilities="damageAbilities"
       :onChange="clickChanged('damage')"
     >
@@ -101,9 +101,13 @@
             ability: newAbility,
             value: newValue
           };
+
           this.onChange(o, key);
         }
       }
+    },
+    updated: function() {
+      console.log('ClickSetter updated');
     }
   }
 </script>
@@ -118,6 +122,7 @@
     width: 100%;
     min-height: 28px;
     min-width: 24px;
+    margin-bottom: 3px;
   }
 
   .deleter {
