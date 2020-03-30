@@ -113,6 +113,18 @@
           >
           </click-builder>
         </div>
+
+        <div class="flex row">
+          <custom-abilities
+            :moveBadge="badgeKeywords.move"
+            :attackBadge="badgeKeywords.range"
+            :defenseBadge="badgeKeywords.defense"
+            :damageBadge="badgeKeywords.damage"
+            :customAbilities="customAbilities"
+            :onChange="customAbilitiesChanged"
+          >
+          </custom-abilities>
+        </div>
       </div>
     </div>
   </div>
@@ -124,6 +136,7 @@
   import BaseEnhancementCombo from '../widgets/BaseEnhancementCombo';
   import EnhancementSetter from '../widgets/EnhancementSetter';
   import ClickBuilder from '../widgets/ClickBuilder';
+  import CustomAbilities from './CustomAbilities';
   import {
     SWIM,
     FLIGHT,
@@ -143,7 +156,7 @@
   const ID_LARGE = 'large';
   const ID_COLOSSAL = 'colossal';
 
-  const rationalizeEnhancementList = async (badgeKeywords, enhancements, api) => {
+  const keywordsToEnhancements = async (badgeKeywords, enhancements, api) => {
 
     const fixedKeywords = await Promise.all(Object.values(badgeKeywords).map(async (bVal) => {
 
@@ -204,6 +217,11 @@
         return newAndFulle;
       }));
 
+    return requiredList;
+  };
+
+  const rationalizeEnhancementList = async (requiredList, enhancements) => {
+
     const lockedEnhancements = requiredList.map((lockMe) => {
         const c = clone(lockMe);
         c.locked = true;
@@ -238,7 +256,8 @@
       ClixTextField,
       BaseEnhancementCombo,
       EnhancementSetter,
-      ClickBuilder
+      ClickBuilder,
+      CustomAbilities
     },
     computed: {
       showRangeField: function() {
@@ -310,7 +329,8 @@
         },
         clicks: [],
         enhancements: [],
-        possibleEnhancements: []
+        possibleEnhancements: [],
+        customAbilities: []
       };
     },
     mounted: function() {
@@ -332,8 +352,10 @@
         
           this.badgeKeywords[key] = keyword;
 
-          this.enhancements = await rationalizeEnhancementList(this.badgeKeywords, 
-            this.enhancements, this);
+          const keywordsEnhancements = await keywordsToEnhancements(
+            this.badgeKeywords, this.enhancements, this);
+          this.enhancements = await rationalizeEnhancementList(
+            keywordsEnhancements, this.enhancements);
         }
       },
       moveEnhancementChanged: function(enhancements) {
@@ -351,7 +373,38 @@
         this.enhancements = [...keepers, ...enhancements];
       },
       clicksChanged: function(newClicks) {
-        this.clicks.splice(0, this.clicks.length, ...newClicks);
+
+        const fx = async () => {
+          const enhancementList = await Promise.all(newClicks.reduce((list, c) => {
+            
+            const getList = (prop) => {
+              return !isNil(c[prop].ability) ?
+                c[prop].ability.enhancements : [];
+            };
+
+            const full = [
+              ...getList('move'),
+              ...getList('attack'),
+              ...getList('defend'),
+              ...getList('damage')
+            ];
+
+            return list.concat(full);
+          }, [])
+          .map(async (e) => {
+            const fullE = await this.getEnhancement(e);
+            return fullE;
+          }));
+
+          this.clicks.splice(0, this.clicks.length, ...newClicks);
+          this.enhancements = await rationalizeEnhancementList(enhancementList,
+            this.enhancements, this);
+        };
+
+        fx();
+      },
+      customAbilitiesChanged: function(customAbilities) {
+        this.customAbilities = customAbilities;
       }
     }
   }

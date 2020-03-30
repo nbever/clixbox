@@ -1,7 +1,7 @@
 <template>
   <div class="flex row" @click="toggleEditMode">
-    <div :style="color" class="value-box">
-      <div :style="{color: 'inherit'}" v-if="!editMode">{{clickValue}}</div>
+    <div :style="color" :class="[{custom: isCustom}, valueBoxClass]">
+      <div :style="{color: 'inherit'}" :class="{ko: isKo}" v-if="!editMode">{{clickValue}}</div>
       <input
         v-if="editMode"
         class="no-outline"
@@ -21,7 +21,7 @@
         </div>
 
         <md-menu-content>
-          <md-menu-item v-for="ability in abilities" 
+          <md-menu-item v-for="ability in augmentedAbilities" 
             class="menu-item"
             @click="abilityChangedInternally(ability)"
           >
@@ -32,7 +32,7 @@
                 :style="{backgroundColor: ability.color}"
               >
               </div>
-              <div v-if="ability._id === 'KO'" class="ko orb-small">
+              <div v-if="ability._id === 'KO'" class="ko">
                 KO
               </div>
               <div>
@@ -64,20 +64,29 @@ export default {
   data: function() {
     return {
       showAbilities: false,
-      editMode: false
+      editMode: false,
+      valueBoxClass: 'value-box'
     }
   },
   computed: {
+    isCustom: function() {
+      return !isNil(this.value.ability && this.value.ability._id === 'CUST');
+    },
+    isKo: function() {
+      return !isNil(this.value.ability && this.value.ability._id === 'KO');
+    },
     color: function() {
       if (isNil(this.value.ability)) {
-        return {
-        };
+        return {};
       }
 
-      return {
-        backgroundColor: this.value.ability.color,
-        color: 'white'
-      };
+      return this.value.ability._id !== 'CUST' ?
+        {
+          backgroundColor: this.value.ability.color,
+          color: 'white'
+        }
+        :
+        {};
     },
     clickValue: function() {
       if (this.value.value === -1) {
@@ -128,7 +137,18 @@ export default {
     abilityChangedInternally: function(newAbility) {
       
       this.showAbilities = false;
-      this.onChange(newAbility, this.value.value);
+      this.editMode = false;
+
+      if (newAbility._id === 'KO') {
+        this.onChange(this.value.ability, -1);
+        return;;
+      }
+
+      const saveAbility = newAbility._id === 'NONE' ?
+        null : newAbility;
+      const value = this.value.value === -1 ?
+        8 : this.value.value;
+      this.onChange(saveAbility, value);
     },
     valueChanged: function($e) {
       this.onChange(this.value.ability, parseInt($e.target.value));
@@ -156,6 +176,10 @@ export default {
 .ko {
   font-weight: bolder;
   color: $red;
+}
+
+.custom {
+  border: 1px solid $middle_gray;
 }
 
 .little-text {
