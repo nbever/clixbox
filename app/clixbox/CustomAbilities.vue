@@ -6,46 +6,90 @@
     <div v-for="(ability, index) in customAbilities" 
       :class="{odd: index % 2 === 1, abilityRow: true}"
     >
+      <div class="flex row">
+        <div style="padding-right: 12px;">
+          <div class="flex row align-center">
+            <type-drop-down
+              class="field"
+              :moveBadge="moveBadge"
+              :attackBadge="attackBadge"
+              :defenseBadge="defenseBadge"
+              :damageBadge="damageBadge"
+              :badge="ability.badge"
+              :badgeChanged="badgeChanged(index)"
+            >
+            </type-drop-down>
 
-      <div class="flex row align-center">
-        <type-drop-down
-          class="field"
-          :moveBadge="moveBadge"
-          :attackBadge="attackBadge"
-          :defenseBadge="defenseBadge"
-          :damageBadge="damageBadge"
-          :badge="ability.badge"
-          :badgeChanged="badgeChanged(index)"
-        >
-        </type-drop-down>
+            <clix-text-field
+              class="field"
+              label="Name"
+              :value="ability.name"
+              :keyup="change(index, 'name')"
+            >
+            </clix-text-field>
+          </div>
 
-        <clix-text-field
-          class="field"
-          label="Name"
-          :value="ability.name"
-          :keyup="change(index, 'name')"
-        >
-        </clix-text-field>
-
-        <div>
-          <div>Enhancements</div>
+          <div>
+            <clix-text-area 
+              class="field"
+              label="Description"
+              :value="ability.text"
+              :keyup="change(index, 'text')"
+            >
+            </clix-text-area>
+          </div>
         </div>
 
         <div>
-          <div>Abilities</div>
+
+          <div>
+            <div>Abilities</div>
+            <ability-builder
+              :abilityList="ability.abilities"
+              :addAbility="addInnerAbility(index)"
+              :removeAbility="removeInnerAbility(index)"
+              :changeAbility="changeInnerAbility(index)"
+              :category="ability.category"
+            >
+            </ability-builder>
+          </div>
+
+          <div>
+            <div>Keywords</div>
+            <keyword-builder
+              :keywordList="ability.keywords"
+              :addKeyword="addInnerKeyword(index)"
+              :removeKeyword="removeInnerKeyword(index)"
+              :changeKeyword="changeInnerKeyword(index)"
+            >
+            </keyword-builder>
+          </div>
+
+          <div>
+            <div>Enhancements</div>
+              <div class="flex row">
+                <enhancement-setter
+                  :enhancements="ability.enhancements.filter((f) => f.type === MOVE)"
+                  :possibleEnhancements="moveEnhancements"
+                  :enhancementChanged="moveEnhancementChanged"
+                  categoryClass="hc hc-icon-run"
+                  :canAdd="true"
+                >
+                </enhancement-setter>
+              </div>
+              <div class="flex row">
+                <enhancement-setter
+                  :enhancements="ability.enhancements.filter((f) => f.type === TARGET)"
+                  :possibleEnhancements="targetEnhancements"
+                  :enhancementChanged="targetEnhancementChanged"
+                  categoryClass="hc hc-icon-target"
+                  :canAdd="true"
+                >
+                </enhancement-setter>
+              </div>
+          </div>
         </div>
       </div>
-
-      <div>
-        <clix-text-area 
-          class="field"
-          label="Description"
-          :value="ability.text"
-          :keyup="change(index, 'text')"
-        >
-        </clix-text-area>
-      </div>
-
     </div>
     <div class="adder">
       <md-button class="md-icon-button md-primary" @click="addAbility">
@@ -61,7 +105,12 @@ import {ALWAYS} from '../widgets/TypeDropDown';
 import TypeDropDown from '../widgets/TypeDropDown';
 import ClixTextField from '../widgets/ClixTextField';
 import ClixTextArea from '../widgets/ClixTextArea';
+import AbilityBuilder from '../widgets/AbilityBuilder';
+import KeywordBuilder from '../widgets/KeywordBuilder';
+import EnhancementSetter from '../widgets/EnhancementSetter';
 import clone from 'lodash/clone';
+import {DEFENSE, ATTACK, SPEED, DAMAGE, MOVE, TARGET} from
+  '../../constants';
 
 export default {
   name: 'custom-abilities',
@@ -73,13 +122,38 @@ export default {
     customAbilities: Array,
     onChange: Function
   },
+  data: function() {
+    return {
+      possibleEnhancements: []
+    };
+  },
   components: {
     TypeDropDown,
     ClixTextField,
-    ClixTextArea
+    ClixTextArea,
+    AbilityBuilder,
+    KeywordBuilder,
+    EnhancementSetter
+  },
+  mounted: function() {
+    const fx = async () => {
+      const allEns = await this.getEnhancements();
+      this.possibleEnhancements = Object.values(allEns);
+    };
+
+    fx();
   },
   computed: {
-
+    moveEnhancements: function() {
+      return this.possibleEnhancements.filter((pe) => {
+        return pe.type === MOVE;
+      });
+    },
+    targetEnhancements: function() {
+      return this.possibleEnhancements.filter((pe) => {
+        return pe.type === TARGET;
+      })
+    }
   },
   methods: {
     change: function(index, prop) {
@@ -111,7 +185,7 @@ export default {
         action: 'New',
         color: 'white',
         text: '',
-        category: 'MOVE',
+        category: 'ALL',
         enhancements: [],
         keywords: [],
         abilities: [],
@@ -129,11 +203,66 @@ export default {
 
           const newOne = clone(c);
           newOne.badge = $e;
+
+          const newCategory = newOne.badge === this.damageBadge ?
+            DAMAGE 
+            :
+            newOne.badge === this.attackBadge ?
+              ATTACK
+              :
+              newOne.badge === this.moveBadge ?
+                SPEED
+                :
+                newOne.badge === this.defenseBadge ?
+                  DEFENSE
+                  :
+                  'ALL';
+          newOne.category = newCategory;
+          newOne.abilities = [];
+
           return newOne;
         });
 
         this.onChange(list);
       };
+    },
+    addInnerAbility: function(index) {
+      return (ability) => {
+        this.customAbilities[index].abilities.push(ability);
+      };
+    },
+    removeInnerAbility: function(index) {
+      return (innerIndex) => {
+        this.customAbilities[index].abilities.splice(innerIndex, 1);
+      };
+    },
+    changeInnerAbility: function(index) {
+      return (innerIndex, ability) => {
+        // this.customAbilities[index].abilities[innerIndex] = ability;
+        this.customAbilities[index].abilities.splice(innerIndex, 1, ability);
+      };
+    },
+    addInnerKeyword: function(index) {
+      return (keyword) => {
+        this.customAbilities[index].keywords.push(keyword);
+      };
+    },
+    removeInnerKeyword: function(index) {
+      return (innerIndex) => {
+        this.customAbilities[index].keywords.splice(innerIndex, 1);
+      };
+    },
+    changeInnerKeyword: function(index) {
+      return (innerIndex, keyword) => {
+        this.customAbilities[index].keywords.splice(innerIndex, 1, keyword);
+      };
+    },
+
+    moveEnhancementChanged: function() {
+
+    },
+    targetEnhancementChanged: function() {
+
     }
   }
 };
@@ -149,6 +278,8 @@ export default {
 
 .abilityRow {
   padding: 12px;
+  border: 1px solid $light-gray;
+  border-radius: 6px;
 }
 
 .field {
@@ -157,7 +288,6 @@ export default {
 
 .odd {
   background-color: $light-gray;
-  border-radius: 6px;
 }
 
 </style>

@@ -42,7 +42,7 @@
       </div>
 
     </div>
-    <div class="add-enhancement">
+    <div v-if="canAdd" class="add-enhancement">
       <md-button class="md-icon-button"
         @click="addEnhancement"
       >
@@ -62,7 +62,11 @@
       enhancements: Array,
       possibleEnhancements: Array,
       enhancementChanged: Function,
-      categoryClass: String
+      categoryClass: String,
+      canAdd: {
+        type: Boolean,
+        default: true
+      }
     },
     computed: {
       menuItems: function() {

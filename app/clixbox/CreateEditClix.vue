@@ -89,6 +89,7 @@
             :possibleEnhancements="moveEnhancements"
             :enhancementChanged="moveEnhancementChanged"
             categoryClass="hc hc-icon-run"
+            :canAdd="false"
           >
           </enhancement-setter>
         </div>
@@ -98,6 +99,7 @@
             :possibleEnhancements="targetEnhancements"
             :enhancementChanged="targetEnhancementChanged"
             categoryClass="hc hc-icon-target"
+            :canAdd="false"
           >
           </enhancement-setter>
         </div>
@@ -156,99 +158,8 @@
   const ID_LARGE = 'large';
   const ID_COLOSSAL = 'colossal';
 
-  const keywordsToEnhancements = async (badgeKeywords, enhancements, api) => {
-
-    const fixedKeywords = await Promise.all(Object.values(badgeKeywords).map(async (bVal) => {
-
-      if (isNil(bVal)) {
-        return bVal;
-      }
-
-      const enhancementList = isNil(bVal.enhancements) ?
-        [] : bVal.enhancements;
-
-      if (bVal.id === ID_LARGE || bVal.id === ID_COLOSSAL) {
-        const size = await api.getKeywordByName(GREAT_SIZE);
-        const reach = await api.getKeywordByName(GIANT_REACH);
-        enhancementList.push(...size.enhancements, ...reach.enhancements);
-      }
-
-      if (bVal.id === ID_COLOSSAL) {
-        const stamina = await api.getKeywordByName(COLOSSAL_STAMINA);
-        enhancementList.push(...stamina.enhancements);
-      }
-
-      return {
-        ...bVal,
-       enhancements: enhancementList 
-      };
-    }));
-
-    const requiredList = await Promise.all(Object.values(fixedKeywords)
-      .filter((val) => {
-        if (isNil(val) || isNil(val.enhancements) || val.enhancements.length ===0) {
-          return false;
-        }
-        return true;
-      })
-      .reduce((list, enhancementList) => {
-        const uniqueOnes = enhancementList.enhancements.filter((newE) => {
-          const dupe = list.find((listItem) => {
-            return newE === listItem;
-          });
-
-          return isNil(dupe);
-        });
-
-        list.push(...uniqueOnes);
-
-        return list;
-      }, [])
-      .map(async (liteE) => {
-        const alreadyGrabbed = enhancements.find((fullE) => {
-          return liteE === fullE._id;
-        });
-
-        if (!isNil(alreadyGrabbed)) {
-          return alreadyGrabbed;
-        }
-
-        const newAndFulle = await api.getEnhancement(liteE);
-        return newAndFulle;
-      }));
-
-    return requiredList;
-  };
-
-  const rationalizeEnhancementList = async (requiredList, enhancements) => {
-
-    const lockedEnhancements = requiredList.map((lockMe) => {
-        const c = clone(lockMe);
-        c.locked = true;
-        return c;
-      });
-
-    const oldEnhancements = enhancements
-      .filter((oldE) => {
-        const isItLocked = lockedEnhancements.find((lE) => {
-          return lE._id === oldE._id;
-        });
-
-        if (!isNil(isItLocked)) {
-          return false;
-        }
-
-        return true;
-      })
-      .map((leftover) => {
-        const c = clone(leftover);
-        c.locked = false;
-        return c;
-      });
-
-    const fullList = [...lockedEnhancements, ...oldEnhancements];
-    return fullList;
-  };
+  import {rationalizeEnhancementList, keywordsToEnhancements}
+    from './resolvers';
 
   export default {
     components: {
@@ -354,8 +265,12 @@
 
           const keywordsEnhancements = await keywordsToEnhancements(
             this.badgeKeywords, this.enhancements, this);
-          this.enhancements = await rationalizeEnhancementList(
-            keywordsEnhancements, this.enhancements);
+          const locked = keywordsEnhancements.map((e) => {
+            const lEn = clone(e);
+            lEn.locked = true;
+            return lEn;
+          });
+          this.enhancements = locked;
         }
       },
       moveEnhancementChanged: function(enhancements) {
