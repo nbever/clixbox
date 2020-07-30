@@ -51,6 +51,7 @@ const keywordSchema = new mongoose.Schema({
 const clixSchema = new mongoose.Schema({
   name: String,
   model: String,
+  image: String,
   release: String,
   rangeTargets: Number,
   range: Number,

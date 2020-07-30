@@ -29,6 +29,13 @@ const updateClix = async function(id, newClixData) {
   return updatedClix;
 }
 
+const isImageInUse = async function(imageName) {
+  const clix = await Clix.findOne(
+    {image: imageName});
+
+  return {image: imageName, used: !isNil(clix)};
+};
+
 const createClix = async function(clix) {
   const oldClix = await Clix.findOne({
     name: clix.name,
@@ -57,5 +64,6 @@ module.exports = {
   getAClix,
   deleteAClix,
   updateClix,
-  createClix
+  createClix,
+  isImageInUse
 };

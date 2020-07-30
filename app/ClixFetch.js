@@ -2,20 +2,25 @@ import isNil from 'lodash/isNil';
 import isFunction from 'lodash/isFunction';
 
 const clixFetch = async ($root, url, method, body = null, el = null, 
-  errorText = 'Unknown Error') => {
+  errorText = 'Unknown Error', stringify = true, headers = null) => {
 
   $root.setLoading(true);
 
-  const fetchObj = {
-    method,
-    headers: new Headers({
+  const headerz = isNil(headers) ? 
+    new Headers({
       'Content-Type': 'application/json',
       'Accept-Type': 'application/json'
     })
+    :
+    headers;
+
+  const fetchObj = {
+    method,
+    headers: headerz
   };
 
-  if (!isNil(body)) {
-    fetchObj.body = JSON.stringify(query);
+  if (!isNil(body) && stringify === true) {
+    fetchObj.body = JSON.stringify(body);
   };
 
   const response = await fetch(url, fetchObj);

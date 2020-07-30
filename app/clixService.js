@@ -81,6 +81,30 @@ const ClixApi = {
           const clix = await genericLoader(
             '/api/clix', this.$root);
           return clix;
+        },
+        saveClix: async function(clix, callback) {
+          const savedClix = await clixFetch(
+            this.$root, '/api/clix', 'POST', clix);
+
+          callback(savedClix);
+        },
+        saveImage: async function(image, callback) {
+          const formData = new FormData();
+          formData.append('picUpload', image);
+
+          const response = await fetch(
+            '/api/images', 
+            {
+              method: 'POST', 
+              body: formData
+            }
+          );
+
+          const result = await response.json();
+          return result.logo;
+        },
+        deleteImage: async function(imageName) {
+          await clixFetch(this.$root, '/api/images/' + imageName, 'DELETE');
         }
       }
     });

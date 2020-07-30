@@ -5,3 +5,4 @@ node_modules/
 db/
 mongodb/
 start_db.sh
+server/images/

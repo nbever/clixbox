@@ -1,5 +1,14 @@
 <template>
   <div>
+
+    <md-dialog-alert 
+      :md-active.sync="cannotSave"
+      md-title="Error"
+      md-content="Name, Cost and Clix must be defined in order to save."
+    >
+    </md-dialog-alert>
+
+
     <div class="padder">
       <go-home :crumbs="links" />
     </div>
@@ -28,6 +37,11 @@
             :keyup="change('release')"
           >
           </clix-text-field>
+        </div>
+
+        <div class="flex row">
+          <image-saver placeholder="Upload an image of the new HeroClix" :imageName="imageChanged">
+          </image-saver>
         </div>
 
         <div class="flex row">
@@ -128,6 +142,10 @@
           </custom-abilities>
         </div>
       </div>
+      <div class="buttons">
+        <md-button class="md-raised" @click="pageSaveClix">Save</md-button>
+        <md-button class="" @click="cancelClixCreation">Cancel</md-button>
+      </div>
     </div>
   </div>
 </template>
@@ -138,6 +156,7 @@
   import BaseEnhancementCombo from '../widgets/BaseEnhancementCombo';
   import EnhancementSetter from '../widgets/EnhancementSetter';
   import ClickBuilder from '../widgets/ClickBuilder';
+  import ImageSaver from '../widgets/ImageSaver';
   import CustomAbilities from './CustomAbilities';
   import {
     SWIM,
@@ -168,7 +187,8 @@
       BaseEnhancementCombo,
       EnhancementSetter,
       ClickBuilder,
-      CustomAbilities
+      CustomAbilities,
+      ImageSaver
     },
     computed: {
       showRangeField: function() {
@@ -229,6 +249,7 @@
           model: '',
           release: '',
           cost: 50,
+          image: '',
           range: 0,
           rangeTargets: 0
         },
@@ -241,7 +262,8 @@
         clicks: [],
         enhancements: [],
         possibleEnhancements: [],
-        customAbilities: []
+        customAbilities: [],
+        cannotSave: false
       };
     },
     mounted: function() {
@@ -257,6 +279,9 @@
         return ($e) => {
           this.clix[key] = $e.target.value;
         }
+      },
+      imageChanged: function(name) {
+        this.clix.image = name;
       },
       badgeSelected: function(key) {
         return async (keyword) => {
@@ -294,7 +319,12 @@
             
             const getList = (prop) => {
               return !isNil(c[prop].ability) ?
-                c[prop].ability.enhancements : [];
+                !isNil(c[prop].ability.enhancements) ?
+                  c[prop].ability.enhancements 
+                  : 
+                  []
+                :
+                [];
             };
 
             const full = [
@@ -312,14 +342,44 @@
           }));
 
           this.clicks.splice(0, this.clicks.length, ...newClicks);
-          this.enhancements = await rationalizeEnhancementList(enhancementList,
-            this.enhancements, this);
+          this.enhancements = await rationalizeEnhancementList(
+            this.enhancements, enhancementList, this);
         };
 
         fx();
       },
       customAbilitiesChanged: function(customAbilities) {
         this.customAbilities = customAbilities;
+      },
+      pageSaveClix: function() {
+        const doIt = async () => {
+          const valid = (key) => {
+            return !isNil(this.clix[key]) || this.clix[key].trim().length > 0;
+          };
+
+          if (!valid('name') || !valid('cost') || this.clicks.length <= 0) {
+            this.cannotSave = true;
+            return;
+          }
+
+          const saver = {
+            ...this.clix,
+            customAbilities: this.customAbilities,
+            keywords: this.badgeKeywords,
+            enhancements: this.enhancements,
+            clix: this.clicks
+          };
+
+          console.log(JSON.stringify(saver));
+          await this.saveClix(saver, (result) => {
+            this.$router.push('/clixbox');  
+          });
+        };
+
+        doIt();
+      },
+      cancelClixCreation: function() {
+        this.$router.push('/clixbox');
       }
     }
   }

@@ -6,7 +6,10 @@
     <div v-for="(ability, index) in customAbilities" 
       :class="{odd: index % 2 === 1, abilityRow: true}"
     >
-      <div class="flex row">
+      <div class="flex row ability-box">
+        <div class="remove mycons-cancel-circle" @click="deleteAbility(index)">
+
+        </div>
         <div style="padding-right: 12px;">
           <div class="flex row align-center">
             <type-drop-down
@@ -69,9 +72,9 @@
             <div>Enhancements</div>
               <div class="flex row">
                 <enhancement-setter
-                  :enhancements="ability.enhancements.filter((f) => f.type === MOVE)"
+                  :enhancements="ability.enhancements.filter((f) => f.type === 'MOVE')"
                   :possibleEnhancements="moveEnhancements"
-                  :enhancementChanged="moveEnhancementChanged"
+                  :enhancementChanged="moveEnhancementChanged(index)"
                   categoryClass="hc hc-icon-run"
                   :canAdd="true"
                 >
@@ -79,9 +82,9 @@
               </div>
               <div class="flex row">
                 <enhancement-setter
-                  :enhancements="ability.enhancements.filter((f) => f.type === TARGET)"
+                  :enhancements="ability.enhancements.filter((f) => f.type === 'TARGET')"
                   :possibleEnhancements="targetEnhancements"
-                  :enhancementChanged="targetEnhancementChanged"
+                  :enhancementChanged="targetEnhancementChanged(index)"
                   categoryClass="hc hc-icon-target"
                   :canAdd="true"
                 >
@@ -111,6 +114,9 @@ import EnhancementSetter from '../widgets/EnhancementSetter';
 import clone from 'lodash/clone';
 import {DEFENSE, ATTACK, SPEED, DAMAGE, MOVE, TARGET} from
   '../../constants';
+
+import {rationalizeEnhancementList, keywordsToEnhancements}
+  from './resolvers';
 
 export default {
   name: 'custom-abilities',
@@ -245,24 +251,42 @@ export default {
     addInnerKeyword: function(index) {
       return (keyword) => {
         this.customAbilities[index].keywords.push(keyword);
+        this.fixEnhancementList(index);
       };
     },
     removeInnerKeyword: function(index) {
       return (innerIndex) => {
         this.customAbilities[index].keywords.splice(innerIndex, 1);
+        this.fixEnhancementList(index);
       };
     },
     changeInnerKeyword: function(index) {
       return (innerIndex, keyword) => {
         this.customAbilities[index].keywords.splice(innerIndex, 1, keyword);
+        this.fixEnhancementList(index);
       };
     },
-
-    moveEnhancementChanged: function() {
-
+    moveEnhancementChanged: function(index) {
+      return (enhancements) => {
+        this.customAbilities[index].enhancements = enhancements;
+      };
     },
-    targetEnhancementChanged: function() {
+    targetEnhancementChanged: function(index) {
+      return (enhancements) => {
+        this.customAbilities[index].enhancements = enhancements;
+      };
+    },
+    fixEnhancementList: function(index) {
+      
+      const fixEnhancements = async () => {
+        const results = await keywordsToEnhancements(this.customAbilities[index].keywords,
+          this.customAbilities[index].enhancements, this);
+        const finalList = await rationalizeEnhancementList(results, 
+          this.customAbilities[index].enhancements);
+        this.customAbilities[index].enhancements = finalList; 
+      };
 
+      fixEnhancements();
     }
   }
 };
@@ -271,6 +295,10 @@ export default {
 
 <style lang="scss" scoped>
 @import '../../variables';
+
+.ability-box {
+  position: relative;
+}
 
 .adder {
   width: 100%;
@@ -288,6 +316,21 @@ export default {
 
 .odd {
   background-color: $light-gray;
+}
+
+.remove {
+  position: absolute;
+  top: -20px;
+  font-size: 20px;
+  right: -22px;
+  background-color: white;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 1px;
+
+  &:hover {
+    background-color: $gray;
+  }
 }
 
 </style>

@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const cors = require('cors');
 const fs = require('fs');
+const path = require('path');
 
 const clixApi = require('./clixApi');
 const abilityApi = require('./abilityApi');
@@ -13,6 +14,7 @@ const isNil = require('lodash/isNil');
 const {initDB} = require('./init');
 
 const app = express();
+app.use('/images', express.static('images'));
 app.use(cors());
 app.use(express.json());
 app.use(function(err, req, resp, next) {
@@ -32,6 +34,28 @@ db.on('connected', async function() {
   console.log('DB connected');
   console.log('checking initialization state...');
   await initDB();
+
+  console.log('Cleaning images');
+
+  const images = fs.readdirSync(path.join(__dirname, 'images'));
+  const unusedImages = 
+    (await Promise.all(
+      images.map(async (i) => {
+        return await clixApi.isImageInUse(i);
+      })
+    )).filter((result) => {
+      return !result.used;
+    })
+    .forEach((image) => {
+      fs.unlink(path.join(__dirname, 'images', image.image), (err) => {
+        if (err) {
+          throw err;
+        }
+
+        console.log(`File removed: ${image.image}`);
+      });
+    });
+
   console.log('DB is ready to go');
 });
 
@@ -52,6 +76,10 @@ app.post('/api/images', upload.single('picUpload'), async (req, resp) => {
   const suffix = req.file.originalname.split('.')[1];
   fs.renameSync(req.file.path, `${req.file.path}.${suffix}`);
   resp.json({logo: `${req.file.filename}.${suffix}`});
+});
+
+app.delete('/api/images/:imageId', async (req, resp) => {
+  fs.unlinkSync('./images/' + req.params.imageId);
 });
 
 // clix

@@ -4,7 +4,10 @@
       <div :class="categoryClass" :style="{paddingTop: '12px'}"></div>
     </div>
     <div v-for="(enhancement, index) in enhancements" 
-      class="orb-small border" :style="{backgroundColor: enhancement.color}">
+      class="orb-small border tooltip" :style="{backgroundColor: enhancement.color}">
+
+      <md-tooltip>{{enhancement.text}}</md-tooltip>
+
       <div v-if="isIconNull(enhancement)" 
         :class="`overlay hc hc-icon-${enhancement.icon.toLowerCase()}`">
       </div>
@@ -198,6 +201,10 @@
   left: 3px;
   color: black;
   font-size: 24px;
+}
+
+.tooltip {
+  cursor: pointer;
 }
 
 </style>
