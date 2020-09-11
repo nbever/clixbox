@@ -11,6 +11,7 @@ import ClixApi from './app/clixService.js';
 import App from './app/App.vue';
 import Home from './app/Home.vue';
 import ClixBox from './app/clixbox/ClixBox';
+import EditClix from './app/clixbox/EditClix';
 import CreateEditClix from './app/clixbox/CreateEditClix';
 import GameBox from './app/gamebox/GameBox';
 
@@ -24,6 +25,7 @@ const router = new VueRouter({
     {path: '/clixbox', name: 'clixbox', component: ClixBox},
     {path: '/gamebox', name: 'gamebox', component: GameBox},
     {path: '/create', name: 'create', component: CreateEditClix},
+    {path: '/edit/:clixId', name: 'edit', component: EditClix, props: true},
     {path: '/', redirect: {name: 'home'}}
     // {path: '/foo', component: Foo},
     // {path: '/home', name: 'leagues', component: Leagues},

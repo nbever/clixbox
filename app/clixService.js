@@ -82,11 +82,25 @@ const ClixApi = {
             '/api/clix', this.$root);
           return clix;
         },
+        getClix: async function(id) {
+          const clix = await clixFetch(this.$root, `/api/clix/${id}`, 'GET');
+          return clix;
+        },
         saveClix: async function(clix, callback) {
           const savedClix = await clixFetch(
             this.$root, '/api/clix', 'POST', clix);
 
           callback(savedClix);
+        },
+        updateClix: async function(clix, id, callback) {
+          const savedClix = await clixFetch(
+            this.$root, `/api/clix/${id}`, 'PUT', clix);
+
+          callback(savedClix);
+        },
+        deleteClix: async function(id) {
+          await clixFetch(this.$root, `/api/clix/${id}`, 'DELETE');
+          return;
         },
         saveImage: async function(image, callback) {
           const formData = new FormData();
@@ -105,6 +119,16 @@ const ClixApi = {
         },
         deleteImage: async function(imageName) {
           await clixFetch(this.$root, '/api/images/' + imageName, 'DELETE');
+        },
+        getGames: async function() {
+          const games = await genericLoader('/api/games', this.$root);
+          return games;
+        },
+        saveGame: async function(game) {
+
+        },
+        updateGame: async function(game, id) {
+
         }
       }
     });

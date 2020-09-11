@@ -16,7 +16,7 @@
     name: 'go-home',
     methods: {
       gohome: function() {
-        this.$router.push('home');
+        this.$router.push('/home');
       },
       goto: function(link) {
         this.$router.push(link);

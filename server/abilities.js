@@ -211,6 +211,13 @@ const keywords = [
 
 const abilities = [
   {
+    category: 'CUST',
+    action: 'CUSTOM',
+    color: '#ffffff',
+    text: 'See description',
+    enhancements: []
+  },
+  {
     category: S.SPEED,
     action: S.FLURRY,
     color: S.RED,

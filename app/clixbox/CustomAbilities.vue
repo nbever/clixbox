@@ -26,7 +26,7 @@
             <clix-text-field
               class="field"
               label="Name"
-              :value="ability.name"
+              :value="ability.action"
               :keyup="change(index, 'name')"
             >
             </clix-text-field>
@@ -145,6 +145,24 @@ export default {
     const fx = async () => {
       const allEns = await this.getEnhancements();
       this.possibleEnhancements = Object.values(allEns);
+
+      this.customAbilities.forEach( (ability) => {
+        const cat = ability.category;
+        const badge = cat === SPEED ?
+          this.moveBadge
+          :
+          cat === DAMAGE ?
+            this.damageBadge
+            :
+            cat === DEFENSE ?
+              this.defenseBadge
+              :
+              cat === TARGET ?
+                this.attackBadge
+                :
+                ALWAYS;
+        ability.badge = badge;
+      });
     };
 
     fx();
@@ -188,7 +206,7 @@ export default {
     addAbility: function() {
 
       const newAbility = {
-        action: 'New',
+        action: '',
         color: 'white',
         text: '',
         category: 'ALL',

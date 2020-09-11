@@ -111,8 +111,8 @@ app.post('/api/clix', async (req, resp, next) => {
 
 app.delete('/api/clix/:id', async (req, resp, next) => {
   reqHandler(async () => {
-    await clixApi.deleteAClix(req.params.id);
-    return resp.send('OK');
+    const result = await clixApi.deleteAClix(req.params.id);
+    return resp.json(result);
   }, next)
 });
 

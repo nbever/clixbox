@@ -25,9 +25,9 @@ const clixFetch = async ($root, url, method, body = null, el = null,
 
   const response = await fetch(url, fetchObj);
 
-  const rBody = await response.json();
-
   $root.setLoading(false);
+
+  const rBody = await response.json();
 
   if (response.ok !== true) {
     const details = `${response.status}: ${response.statusText}`;

@@ -1,7 +1,7 @@
 <template>
   <div class="click-view">
     <div class="ordinal">
-      {{ordinal}}
+      {{(ordinal + 1)}}
     </div>
     <click-display 
       :editable="true" 

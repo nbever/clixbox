@@ -23,6 +23,8 @@
             :keyup="change('name')"
           >
           </clix-text-field>
+        </div>
+        <div class="flex row">
           <clix-text-field
             class="field"
             label="Model #"
@@ -181,6 +183,7 @@
     from './resolvers';
 
   export default {
+    name: 'create-edit-clix',
     components: {
       GoHome,
       ClixTextField,
@@ -266,10 +269,65 @@
         cannotSave: false
       };
     },
+    props: {
+      clixIdToEdit: String
+    },
     mounted: function() {
       const fx = async () => {
         const allEns = await this.getEnhancements();
         this.possibleEnhancements = Object.values(allEns);
+
+        if (!isNil(this.clixIdToEdit)) {
+          const clix = await this.getClix(this.clixIdToEdit);
+          this.clix = {
+            name: clix.name,
+            model: clix.model,
+            cost: clix.cost,
+            release: clix.release,
+            image: clix.image,
+            range: clix.range,
+            rangeTargets: clix.rangeTargets
+          };
+
+          this.customAbilities = 
+            await Promise.all(clix.customAbilities.map(async (ca) => {
+              ca.badge = ca.category;
+              ca.abilities = await Promise.all(ca.abilities.map( async (ability) => {
+                const newAbility = await this.getAbility(ability._id);
+                return newAbility;
+              }));
+
+              ca.keywords = await Promise.all(ca.keywords.map( async (keyword) => {
+                const newWord = await this.getKeyword(keyword._id);
+                return newWord;
+              }));
+
+              ca.enhancements = await Promise.all(ca.enhancements.map(async (enhance) => {
+                const newE = await this.getEnhancement(enhance);
+                return newE;
+              }));
+
+              return ca;
+            }));
+
+          
+
+          this.enhancements = clix.enhancements;
+          this.clicks = clix.clix;
+
+          clix.keywords.forEach(async (kw) => {
+            const keyword = await this.getKeyword(kw.keyword);
+            if (isNil(keyword.abilities) || keyword.abilities.length === 0) {
+              return;
+            }
+
+            const ability = keyword.abilities.find((ab) => {
+              return !isNil(ab.category);
+            });
+
+            this.badgeKeywords[ability.category.toLowerCase()] = keyword;
+          });
+        }
       };
 
       fx();
@@ -370,10 +428,16 @@
             clix: this.clicks
           };
 
-          console.log(JSON.stringify(saver));
-          await this.saveClix(saver, (result) => {
-            this.$router.push('/clixbox');  
-          });
+          if (isNil(this.clixIdToEdit)) {
+            await this.saveClix(saver, (result) => {
+              this.$router.push('/clixbox');  
+            });
+          }
+          else {
+            await this.updateClix(saver, this.clixIdToEdit, (result) => {
+              this.$router.push('/clixbox');
+            });
+          }
         };
 
         doIt();
@@ -391,8 +455,7 @@
 }
 
 .field {
-  margin-right: 12px;
-
+  margin-right: 24px;
   &.small {
     width: 50px;
   }
@@ -400,5 +463,8 @@
 
 .fields {
   background-color: white;
+  text-align: center;
+  padding-left: 24px;
+  margin-right: 24px;
 }
 </style>
