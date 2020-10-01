@@ -32,7 +32,8 @@
 
   export default {
     components: {
-      GoHome
+      GoHome,
+      
     },
     data: function() {
       return {
@@ -55,7 +56,7 @@
         fx();
       },
       create: function() {
-
+        this.$router.push('/gamebox/create');
       },
       editThis: function(id) {
 

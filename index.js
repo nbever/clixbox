@@ -14,6 +14,8 @@ import ClixBox from './app/clixbox/ClixBox';
 import EditClix from './app/clixbox/EditClix';
 import CreateEditClix from './app/clixbox/CreateEditClix';
 import GameBox from './app/gamebox/GameBox';
+import CreateGame from './app/gamebox/CreateGame';
+import GameSetup from './app/gamebox/GameSetup';
 
 Vue.use(VueMaterial);
 Vue.use(VueRouter);
@@ -24,9 +26,17 @@ const router = new VueRouter({
     {path: '/home', name: 'home', component: Home},
     {path: '/clixbox', name: 'clixbox', component: ClixBox},
     {path: '/gamebox', name: 'gamebox', component: GameBox},
-    {path: '/create', name: 'create', component: CreateEditClix},
-    {path: '/edit/:clixId', name: 'edit', component: EditClix, props: true},
-    {path: '/', redirect: {name: 'home'}}
+    {path: '/clixbox/create', name: 'create', component: CreateEditClix},
+    {path: '/clixbox/edit/:clixId', name: 'edit', component: EditClix, props: true},
+    {path: '/', redirect: {name: 'home'}},
+    {path: '/gamebox/create', name: 'gamebox_create', component: CreateGame},
+    {path: '/gamebox/setup', component: GameSetup, props: (route) => {
+      return {
+        ...route.query, 
+        cost: parseInt(route.query.cost),
+        players: JSON.parse(decodeURIComponent(route.query.players))
+      }
+    }}
     // {path: '/foo', component: Foo},
     // {path: '/home', name: 'leagues', component: Leagues},
     // {path: '/admin', component: Admin, props: true,

@@ -68,10 +68,10 @@
     },
     methods: {
       create: function() {
-        this.$router.push('/create');
+        this.$router.push('/clixbox/create');
       },
       editThis: function(id) {
-        this.$router.push(`/edit/${id}`);
+        this.$router.push(`/clixbox/edit/${id}`);
       },
       clearDeletion: function() {
         this.deleteProposal = null;

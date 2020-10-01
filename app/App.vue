@@ -52,5 +52,6 @@
     flex-grow: 1;
     flex-shrink: 1;
     background-color: $gray;
+    overflow: hidden;
   }
 </style>
