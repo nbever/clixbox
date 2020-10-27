@@ -158,7 +158,7 @@ export default {
     }
   },
   updated: function() {
-    console.log('Click display updated');
+    // console.log('Click display updated');
   }
 }
 </script>

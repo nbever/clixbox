@@ -313,17 +313,23 @@
               return ca;
             }));
 
-          
-
           this.enhancements = clix.enhancements;
-          this.clicks = clix.clix;
+          this.clicks = await Promise.all(clix.clix.map(async (clickRow) => {
+            Object.keys(clickRow).forEach(async (key) => {
+              if (isNil(clickRow[key].ability)) {
+                return;
+              }
+
+              clickRow[key].ability = await this.getAbility(clickRow[key].ability);
+            });
+
+            return clickRow;
+          }));
 
           this.badgeKeywords[MOVE.toLowerCase()] = await getBadge(clix, MOVE, this);
           this.badgeKeywords[DEFEND.toLowerCase()] = await getBadge(clix, DEFEND, this);
           this.badgeKeywords['range'] = await getBadge(clix, ATTACK, this);
           this.badgeKeywords[DAMAGE.toLowerCase()] = await getBadge(clix, DAMAGE, this);
-
-          console.log(JSON.stringify(this.badgeKeywords));
         }
       };
 
