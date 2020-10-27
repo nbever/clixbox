@@ -1,22 +1,24 @@
 <template>
-  <div class="clix-viewer">
-    <div class="name-span flex row">
-      <div class="name">{{clix.name}}</div>
-      <div class="cost"> - ({{clix.cost}})</div>
-    </div>
-    <div class="body-block flex row">
-      <div class="image" :style="{backgroundImage: `url(/images/${clix.image})`}">
+  <div class="padder">
+    <div class="clix-viewer small">
+      <div class="name-span flex row">
+        <div class="name">{{clix.name}}</div>
+        <div class="cost"> - ({{clix.cost}})</div>
       </div>
+      <div class="body-block flex row">
+        <div class="image" :style="{backgroundImage: `url(/images/${clix.image})`}">
+        </div>
 
-      <div class="abilities">
-        <div class="action-parent" v-for="key in abilityKeys">
-          <div class="action flex row">
-            <div class="action-badge">
-              {{key}}
-            </div>
-            <div class="ability-row flex row" v-for="ability in abilities[key]">
-              <ability-badge :ability="ability">
-              </ability-badge>
+        <div class="abilities">
+          <div class="action-parent" v-for="key in abilityKeys">
+            <div class="action flex row">
+              <div class="action-badge">
+                <md-icon :class="`hc ${getBadgeClass(key)}`"></md-icon>
+              </div>
+              <div class="ability-row flex row" v-for="ability in abilities[key]">
+                <ability-badge :ability="ability" :no-border="true">
+                </ability-badge>
+              </div>
             </div>
           </div>
         </div>
@@ -29,6 +31,8 @@
 
 import isNil from 'lodash/isNil';
 import AbilityBadge from '../widgets/AbilityBadge';
+import {getBadge} from '../clixbox/resolvers';
+import {ATTACK, DAMAGE, DEFEND, MOVE} from '../../constants';
 
 export default {
   name: 'clix-viewer',
@@ -42,7 +46,11 @@ export default {
   },
   data: function() {
     return {
-      abilities: {}
+      abilities: {},
+      moveBadge: {iconClass: ''},
+      defendBadge: {iconClass: ''},
+      damageBadge: {iconClass: ''},
+      attackBadge: {iconClass: ''}
     };
   },
   computed: {
@@ -51,6 +59,11 @@ export default {
     }
   },
   methods: {
+    getBadgeClass: function(key) {
+      const badge = this[`${key}Badge`];
+
+      return isNil(badge) ? '' : badge.iconClass;
+    },
     refresh: function() {
       const doIt = async () => {
         const abilityList = this.clix.clix.reduce((abilities, clix) => {
@@ -82,7 +95,12 @@ export default {
               this.$set(this.abilities, aKey, results);
             });
           });
-        }
+
+          this.attackBadge = await getBadge(this.clix, ATTACK, this);
+          this.moveBadge = await getBadge(this.clix, MOVE, this);
+          this.defendBadge = await getBadge(this.clix, DEFEND, this);
+          this.damageBadge = await getBadge(this.clix, DAMAGE, this);
+        };
 
       doIt();
     }
@@ -95,6 +113,22 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  @import '../../variables';
+
+  .clix-viewer {
+    border: 1px solid $light_gray;
+    padding: 12px;
+    border-radius: 6px;
+
+    &:hover {
+      background-color: $light_gray;
+    }
+  }
+
+  .small {
+    width: 350px;
+    height: 180px;
+  }
 
   .name {
     font-weight: 'bolder'
@@ -105,10 +139,23 @@ export default {
   }
 
   .image {
-    width: 56px;
-    height: 56px;
+    width: 100px;
     background-size: contain;
     background-repeat: no-repeat;
+  }
+
+  .abilities {
+    padding-left: 4px;
+  }
+
+  .padder {
+    padding: 8px;
+  }
+
+  .action-badge {
+    width: 40px;
+    position: relative;
+    top: 6px;
   }
 
 </style>

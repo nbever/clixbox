@@ -7,7 +7,13 @@ import {
   GRAY,
   GIANT_REACH,
   GREAT_SIZE,
-  COLOSSAL_STAMINA
+  COLOSSAL_STAMINA,
+  TINY,
+
+  SPEED,
+  DEFEND,
+  DAMAGE,
+  ATTACK
 } from '../../constants';
 
 import isNil from 'lodash/isNil';
@@ -115,4 +121,141 @@ export const rationalizeEnhancementList = async (requiredList, enhancements) => 
 
   const fullList = [...lockedEnhancements, ...oldEnhancements];
   return fullList;
+};
+
+export const getBadge = async (clix, category, api) => {
+
+  const hasKeyword = async (keywordName) => {
+
+    const keyword = await api.getKeywordByName(keywordName);
+
+    const result = clix.keywords.find((cK) => {
+      return cK._id === keyword._id;
+    });
+
+    return !isNil(result) ? keyword : null;
+  };
+
+
+  if (category === MOVE) {
+    const hasSwim = await hasKeyword(SWIM);
+
+    if (!isNil(hasSwim)) {
+      return { 
+        id: hasSwim._id, 
+        label: hasSwim.term, 
+        iconClass: `hc-icon-${hasSwim.term.toLowerCase()}`
+      };
+    }
+
+    const hasFlight = await hasKeyword(FLIGHT);
+
+    if (!isNil(hasFlight)) {
+      return {
+        id: hasFlight._id,
+        label: hasFlight.term,
+        iconClass: `hc-icon-${hasFlight.term.toLowerCase()}`
+      };
+    }
+
+    return {
+      id: '0',
+      label: '(Standard)',
+      iconClass: `hc-icon-move`
+    };
+  }
+
+  if (category === ATTACK) {
+    if (clix.rangeTargets > 0 && clix.range === 0) {
+      return {
+        id: '1',
+        label: 'Double',
+        iconClass: 'hc-icon-double-fist'
+      };
+    }
+    else if (clix.range > 0 && clix.rangeTargets === 1) {
+      return {
+        id: '2',
+        label: 'Range',
+        iconClass: 'hc-icon-range'
+      };
+    }
+    else if (clix.range > 0 && clix.rangeTargets === 2) {
+      return {
+        id: '3',
+        label: 'Multi-Range',
+        iconClass: 'mycons-2-bolts'
+      };
+    }
+    else if (clix.range > 0 && clix.rangeTargets === 3) {
+      return {
+        id: '4',
+        label: 'Triple-Range',
+        iconClass: 'mycons-3-bolts'
+      };
+    }
+
+    return {
+      id: '0',
+      label: '(Standard)',
+      iconClass: 'hc-icon-attack'
+    };
+  }
+
+  if (category === DEFEND) {
+    const hasIndominitable = await hasKeyword(INDOMITABLE);
+
+    if (!isNil(hasIndominitable)) {
+      return {
+        id: hasIndominitable._id,
+        label: hasIndominitable.term,
+        icon: `hc-icon-${hasIndominitable.term.toLowerCase()}`
+      };
+    }
+
+    return {
+      id: '0',
+      label: '(Standard)',
+      iconClass: 'hc-icon-defend'
+    };
+  }
+
+  if (category === DAMAGE) {
+    const hasTiny = await hasKeyword(TINY);
+
+    if (!isNil(hasTiny)) {
+      return {
+        id: ID_TINY,
+        label: 'Tiny',
+        iconClass: 'hc-icon-tiny'
+      };
+    }
+
+    const hasGreatSize = await hasKeyword(GREAT_SIZE);
+    const hasGiantReach = await hasKeyword(GIANT_REACH);
+    const hasColossal = await hasKeyword(COLOSSAL_STAMINA);
+
+    if (!isNil(hasColossal)) {
+      return {
+        id: ID_COLOSSAL,
+        label: 'Colossal',
+        iconClass: 'hc-icon-colossal'
+      };
+    }
+
+    if (!isNil(hasGiantReach) && !isNil(hasGreatSize)) {
+      return {
+        id: ID_LARGE,
+        label: 'Large',
+        iconClass: 'hc-icons-large'
+      };
+    }
+
+    return  {
+      id: '0',
+      label: '(Standard)',
+      iconClass: 'hc-icon-damage'
+    };
+  }
+
 };

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="root-editor">
 
     <md-dialog-alert 
       :md-active.sync="cannotSave"
@@ -12,9 +12,9 @@
     <div class="padder">
       <go-home :crumbs="links" />
     </div>
-    <div class="form">
+    <div class="form flex column hidden">
       <div class="title">Add a Clix</div>
-      <div class="fields rounded form">
+      <div class="fields rounded form auto">
         <div class="flex row">
           <clix-text-field 
             class="field"
@@ -77,7 +77,7 @@
             class="field small"
             label="Range"
             :value="clix.range"
-            :keyup="change('rangeTargets')"
+            :keyup="change('range')"
             type="number"
             :inputProps="{min: 0, max: 10}"
           >
@@ -132,7 +132,7 @@
           </click-builder>
         </div>
 
-        <div class="flex row">
+        <!--<div class="flex row">
           <custom-abilities
             :moveBadge="badgeKeywords.move"
             :attackBadge="badgeKeywords.range"
@@ -143,7 +143,7 @@
           >
           </custom-abilities>
         </div>
-      </div>
+      </div>-->
       <div class="buttons">
         <md-button class="md-raised" @click="pageSaveClix">Save</md-button>
         <md-button class="" @click="cancelClixCreation">Cancel</md-button>
@@ -169,7 +169,10 @@
     GRAY,
     GIANT_REACH,
     GREAT_SIZE,
-    COLOSSAL_STAMINA
+    COLOSSAL_STAMINA,
+    DEFEND,
+    DAMAGE,
+    ATTACK
   } from '../../constants';
 
   import isNil from 'lodash/isNil';
@@ -179,7 +182,7 @@
   const ID_LARGE = 'large';
   const ID_COLOSSAL = 'colossal';
 
-  import {rationalizeEnhancementList, keywordsToEnhancements}
+  import {rationalizeEnhancementList, keywordsToEnhancements, getBadge}
     from './resolvers';
 
   export default {
@@ -315,18 +318,12 @@
           this.enhancements = clix.enhancements;
           this.clicks = clix.clix;
 
-          clix.keywords.forEach(async (kw) => {
-            const keyword = await this.getKeyword(kw.keyword);
-            if (isNil(keyword.abilities) || keyword.abilities.length === 0) {
-              return;
-            }
+          this.badgeKeywords[MOVE.toLowerCase()] = await getBadge(clix, MOVE, this);
+          this.badgeKeywords[DEFEND.toLowerCase()] = await getBadge(clix, DEFEND, this);
+          this.badgeKeywords['range'] = await getBadge(clix, ATTACK, this);
+          this.badgeKeywords[DAMAGE.toLowerCase()] = await getBadge(clix, DAMAGE, this);
 
-            const ability = keyword.abilities.find((ab) => {
-              return !isNil(ab.category);
-            });
-
-            this.badgeKeywords[ability.category.toLowerCase()] = keyword;
-          });
+          console.log(JSON.stringify(this.badgeKeywords));
         }
       };
 
@@ -450,6 +447,12 @@
 </script>
 
 <style lang="scss" scoped>
+.root-editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .padder {
   padding: 8px;
 }

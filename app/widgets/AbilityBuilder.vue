@@ -82,7 +82,6 @@
       getAvailableAbilities: function() {
         return this.abilities
           .filter((a1) => {
-            console.log(`${a1.category} vs ${this.category}`);
             return this.category === 'ALL' ||
               a1.category === this.category;
           })

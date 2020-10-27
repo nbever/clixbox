@@ -53,5 +53,7 @@
     flex-shrink: 1;
     background-color: $gray;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 </style>

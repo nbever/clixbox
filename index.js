@@ -5,6 +5,7 @@ import Vue from 'vue';
 import VueMaterial from 'vue-material';
 import VueRouter from 'vue-router';
 import 'vue-material/dist/vue-material.min.css';
+import VTooltip from 'v-tooltip';
 
 import ClixApi from './app/clixService.js';
 
@@ -18,6 +19,7 @@ import CreateGame from './app/gamebox/CreateGame';
 import GameSetup from './app/gamebox/GameSetup';
 
 Vue.use(VueMaterial);
+Vue.use(VTooltip);
 Vue.use(VueRouter);
 Vue.use(ClixApi);
 

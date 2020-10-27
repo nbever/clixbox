@@ -49,6 +49,14 @@ div {
   flex-direction: column;
 }
 
+.hidden {
+  overflow: hidden;
+}
+
+.auto {
+  overflow: auto
+}
+
 .align-center {
   align-items: center;
 }

@@ -118,7 +118,7 @@
   .selection-area {
     flex-grow: 1;
     flex-shrink: 1;
-    background-color: yellow;
+    background-color: white;
     overflow: hidden;
   }
 
@@ -135,6 +135,12 @@
 
   .selector-parent {
     overflow: auto;
+  }
+
+  .selector {
+    flex-wrap: wrap;
+    padding: 8px;
+    cursor: pointer;
   }
 
 </style>
