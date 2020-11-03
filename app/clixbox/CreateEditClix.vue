@@ -132,7 +132,7 @@
           </click-builder>
         </div>
 
-        <!--<div class="flex row">
+        <div class="flex row">
           <custom-abilities
             :moveBadge="badgeKeywords.move"
             :attackBadge="badgeKeywords.range"
@@ -143,7 +143,7 @@
           >
           </custom-abilities>
         </div>
-      </div>-->
+      </div>
       <div class="buttons">
         <md-button class="md-raised" @click="pageSaveClix">Save</md-button>
         <md-button class="" @click="cancelClixCreation">Cancel</md-button>
@@ -172,8 +172,11 @@
     COLOSSAL_STAMINA,
     DEFEND,
     DAMAGE,
-    ATTACK
+    ATTACK,
+    ALL
   } from '../../constants';
+
+  import {ALWAYS} from '../widgets/TypeDropDown';
 
   import isNil from 'lodash/isNil';
   import clone from 'lodash/clone';
@@ -292,9 +295,21 @@
             rangeTargets: clix.rangeTargets
           };
 
+          this.badgeKeywords[MOVE.toLowerCase()] = await getBadge(clix, MOVE, this);
+          this.badgeKeywords[DEFEND.toLowerCase()] = await getBadge(clix, DEFEND, this);
+          this.badgeKeywords['range'] = await getBadge(clix, ATTACK, this);
+          this.badgeKeywords[DAMAGE.toLowerCase()] = await getBadge(clix, DAMAGE, this);
+
           this.customAbilities = 
             await Promise.all(clix.customAbilities.map(async (ca) => {
-              ca.badge = ca.category;
+              ca.badge = ca.category === ALL ?
+                ALWAYS 
+                : 
+                ca.category === ATTACK ?
+                  this.badgeKeywords['range']
+                  :
+                  this.badgeKeywords[ca.category.toLowerCase()];
+                  
               ca.abilities = await Promise.all(ca.abilities.map( async (ability) => {
                 const newAbility = await this.getAbility(ability._id);
                 return newAbility;
@@ -321,15 +336,14 @@
               }
 
               clickRow[key].ability = await this.getAbility(clickRow[key].ability);
+
+              if (clickRow[key].ability.action === 'CUSTOM') {
+                clickRow[key].ability._id = 'CUST';
+              }
             });
 
             return clickRow;
           }));
-
-          this.badgeKeywords[MOVE.toLowerCase()] = await getBadge(clix, MOVE, this);
-          this.badgeKeywords[DEFEND.toLowerCase()] = await getBadge(clix, DEFEND, this);
-          this.badgeKeywords['range'] = await getBadge(clix, ATTACK, this);
-          this.badgeKeywords[DAMAGE.toLowerCase()] = await getBadge(clix, DAMAGE, this);
         }
       };
 

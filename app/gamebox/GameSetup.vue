@@ -15,6 +15,8 @@
               :currentSelection="currentTreeSelection"
               :click="itemSelected"
               :infoClicked="showClixDetails"
+              :clix="getClix(player)"
+              :deleteClick="deleteClix"
             >
             </player-team-selector>
           </div>
@@ -24,7 +26,7 @@
       <div class="selector-parent">
         <div class="selector flex row">
           <clix-viewer v-for="clix in clixChoices"
-            :clix="clix"
+            :clix="clix" :clickCallback="itemChosen"
           />
         </div>
       </div>
@@ -38,6 +40,7 @@
   import PlayerTeamSelector from './PlayerTeamSelector';
   import ClixViewer from '../widgets/ClixViewer';
   import isNil from 'lodash/isNil';
+  import clone from 'lodash/clone';
 
   export default {
     name: 'game-setup',
@@ -47,9 +50,16 @@
       ClixViewer
     },
     props: {
-      players: Array,
+      players: {
+        type: Array,
+        default: () => []
+      },
       name: String,
-      cost: Number
+      cost: Number,
+      clixDict: {
+        type: Object,
+        default: () => { return {}; }
+      }
     },
     data: function() {
       return {
@@ -76,22 +86,46 @@
           this.selectedPlayer.clix = [];
         }
 
-        const fundsLeft = this.cost - this.selectedPlayer.clix.reduce((total, c) => {
-          return total + c.cost;
+        const fundsLeft = this.cost - this.getClix(this.selectedPlayer).reduce((total, c) => {
+          return total + parseInt(c.cost);
         }, 0);
 
-        return this.availableClix.filter((ac) => {
-          return ac.cost <= fundsLeft;
-        });
+        const usedClix = Object.keys(this.clixDict).reduce((list, key) => {
+          return list.concat(this.clixDict[key]);
+        }, []);
+
+        return this.availableClix
+          .filter((ac) => {
+            const used = usedClix.find((uc) => {
+              return ac == uc;
+            });
+            return ac.cost <= fundsLeft && !used;
+          });
       }
     },
     methods: {
+      getClix: function(player) {
+        return isNil(this.clixDict[player.name]) ?
+          []
+          :
+          this.clixDict[player.name];
+      },
       itemSelected: function(player, click) {
         this.selectedPlayer = player;
         this.selectedClix = click;
       },
+      itemChosen: function(click) {
+        const clix = this.getClix(this.selectedPlayer);
+        const cloneClix = clone(clix);
+        cloneClix.push(click);
+        this.$set(this.clixDict, this.selectedPlayer.name, cloneClix);
+      },
       showClixDetails: function(clix) {
 
+      },
+      deleteClix: function(player, clixIndex) {
+        const clix = this.getClix(player);
+        clix.splice(clixIndex, 1);
       }
     },
     mounted: function() {
@@ -100,6 +134,8 @@
         this.availableClix = Object.keys(clix).map((key) => {
           return clix[key];
         });
+
+        this.selectedPlayer = this.players[0];
       };
 
       doIt();
@@ -125,6 +161,7 @@
   .player-bar-parent {
     position: relative;
     overflow: auto;
+    min-width: 200px;
   }
 
   .player-bar {

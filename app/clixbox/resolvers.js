@@ -130,7 +130,7 @@ export const getBadge = async (clix, category, api) => {
     const keyword = await api.getKeywordByName(keywordName);
 
     const result = clix.keywords.find((cK) => {
-      return cK._id === keyword._id;
+      return cK.keyword === keyword._id;
     });
 
     return !isNil(result) ? keyword : null;
@@ -209,7 +209,7 @@ export const getBadge = async (clix, category, api) => {
       return {
         id: hasIndominitable._id,
         label: hasIndominitable.term,
-        icon: `hc-icon-${hasIndominitable.term.toLowerCase()}`
+        iconClass: 'hc-icon-indomitable'
       };
     }
 

@@ -89,3 +89,4 @@ module.exports.DAMAGE = 'DAMAGE';
 module.exports.SPEED = 'SPEED';
 module.exports.ATTACK = 'ATTACK';
 module.exports.DEFENSE = 'DEFENSE';
+module.exports.ALL = 'ALL';

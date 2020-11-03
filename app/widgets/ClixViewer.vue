@@ -1,12 +1,15 @@
 <template>
-  <div class="padder">
+  <div class="padder" @mouseover="showButton = true" @mouseleave="showButton = false">
     <div class="clix-viewer small">
       <div class="name-span flex row">
         <div class="name">{{clix.name}}</div>
         <div class="cost"> - ({{clix.cost}})</div>
       </div>
       <div class="body-block flex row">
-        <div class="image" :style="{backgroundImage: `url(/images/${clix.image})`}">
+        <div class="image-width flex column">
+          <div class="image grow" :style="{backgroundImage: `url(/images/${clix.image})`}">
+          </div>
+          <div class="stiff">{{clix.clix.length}} Clicks</div>
         </div>
 
         <div class="abilities">
@@ -16,14 +19,35 @@
                 <md-icon :class="`hc ${getBadgeClass(key)}`"></md-icon>
               </div>
               <div class="ability-row flex row" v-for="ability in abilities[key]">
-                <ability-badge :ability="ability" :no-border="true">
+                <ability-badge :ability="ability" :customAbility="getCustomAbility(key)" :no-border="true">
+                </ability-badge>
+              </div>
+            </div>
+          </div>
+          <div class="action-parent" v-if="alwaysAbilities.length > 0">
+            <div class="action flex row">
+              <div class="action-badge">
+                <md-icon class="hc hc-icon-star"></md-icon>
+              </div>
+              <div class="ability-row flex row" v-for="customAbility in alwaysAbilities">
+                <ability-badge :customAbility="customAbility" :no-border="true">
                 </ability-badge>
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
+
+    <transition name="fade">
+      <div class="pick-me" v-if="showButton">
+        <md-button class="md-raised" @click="internalClickCallback">
+          Pick Me!
+        </md-button> 
+      </div>
+    </transition>
+
   </div>
 </template>
 
@@ -32,7 +56,7 @@
 import isNil from 'lodash/isNil';
 import AbilityBadge from '../widgets/AbilityBadge';
 import {getBadge} from '../clixbox/resolvers';
-import {ATTACK, DAMAGE, DEFEND, MOVE} from '../../constants';
+import {ATTACK, DAMAGE, DEFEND, MOVE, SPEED, ALL} from '../../constants';
 
 export default {
   name: 'clix-viewer',
@@ -42,7 +66,8 @@ export default {
   props: {
     clix: Object,
     highlight: Boolean,
-    isSmall: Boolean
+    isSmall: Boolean,
+    clickCallback: Function
   },
   data: function() {
     return {
@@ -50,19 +75,34 @@ export default {
       moveBadge: {iconClass: ''},
       defendBadge: {iconClass: ''},
       damageBadge: {iconClass: ''},
-      attackBadge: {iconClass: ''}
+      attackBadge: {iconClass: ''},
+      showButton: false
     };
   },
   computed: {
     abilityKeys: function() {
       return Object.keys(this.abilities);
+    },
+    alwaysAbilities: function() {
+      return this.clix.customAbilities.filter((ca) => {
+        return ca.category === ALL;
+      });
     }
   },
   methods: {
+    internalClickCallback: function() {
+      this.clickCallback(this.clix);
+    },
     getBadgeClass: function(key) {
       const badge = this[`${key}Badge`];
 
       return isNil(badge) ? '' : badge.iconClass;
+    },
+    getCustomAbility: function(key) {
+      return this.clix.customAbilities.find((ca) => {
+        return (ca.category.toLowerCase() === key ||
+          (ca.category === SPEED && key === MOVE.toLowerCase()));
+      });
     },
     refresh: function() {
       const doIt = async () => {
@@ -71,9 +111,15 @@ export default {
             return (isNil(abilities[key]) || (!abilities[key].includes(clix[key].ability) && key !== '_id'));
           })
           .forEach((goodKey) => {
+
+            if (isNil(clix[goodKey].ability)) {
+              return;
+            }
+
             if (isNil(abilities[goodKey])) {
               abilities[goodKey] = [];
             }
+
             abilities[goodKey].push(clix[goodKey].ability);
           });
 
@@ -87,7 +133,6 @@ export default {
           .forEach((aKey) => {
             const promises = abilityList[aKey].map(async (ability) => {
                 const fullAbility = await this.getAbility(ability);
-
                 return fullAbility;
               });
 
@@ -126,7 +171,7 @@ export default {
   }
 
   .small {
-    width: 350px;
+    width: 275px;
     height: 180px;
   }
 
@@ -139,9 +184,13 @@ export default {
   }
 
   .image {
-    width: 100px;
+    width: 100%;
     background-size: contain;
     background-repeat: no-repeat;
+  }
+
+  .image-width {
+    width: 100px;
   }
 
   .abilities {
@@ -150,12 +199,29 @@ export default {
 
   .padder {
     padding: 8px;
+    position: relative;
   }
 
   .action-badge {
     width: 40px;
     position: relative;
     top: 6px;
+  }
+
+  .pick-me {
+    position: absolute;
+    bottom: -20px;
+    text-align: center;
+    width: 100%;
+    z-index: 2;
+  }
+
+  .fade-enter-active .fade-leave-active {
+    transition: opactiy 200ms;
+  }
+
+  .fade-enter, .fade-leave-to {
+    opacity: 0;
   }
 
 </style>

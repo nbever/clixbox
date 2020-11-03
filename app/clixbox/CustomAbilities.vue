@@ -27,7 +27,7 @@
               class="field"
               label="Name"
               :value="ability.action"
-              :keyup="change(index, 'name')"
+              :keyup="change(index, 'action')"
             >
             </clix-text-field>
           </div>

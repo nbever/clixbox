@@ -37,10 +37,22 @@ export default {
   },
   computed: {
     action: function() {
-      return isNil(this.ability) ? '' : this.ability.action;
+      return this.isCustom() ?
+        this.customAbility.action
+        :
+        isNil(this.ability) ? '' : this.ability.action;
     },
     text: function() {
-      return isNil(this.ability) ? '' : this.ability.text;
+      return this.isCustom() ?
+        this.customAbility.text
+        :
+        isNil(this.ability) ? 
+          '' : this.ability.text;
+    }
+  },
+  methods: {
+    isCustom: function() {
+      return !isNil(this.customAbility) && (isNil(this.ability) || this.ability.category === 'CUST');
     }
   }
 };

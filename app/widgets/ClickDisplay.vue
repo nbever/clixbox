@@ -156,9 +156,6 @@ export default {
     focusOut: function() {
       this.editMode = false;
     }
-  },
-  updated: function() {
-    // console.log('Click display updated');
   }
 }
 </script>

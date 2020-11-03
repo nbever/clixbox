@@ -49,6 +49,16 @@ div {
   flex-direction: column;
 }
 
+.grow {
+  flex-grow: 1;
+  flex-shrink: 1;
+}
+
+.stiff {
+  flex-grow: 0;
+  flex-shrink: 0
+}
+
 .hidden {
   overflow: hidden;
 }
