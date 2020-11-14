@@ -13,7 +13,7 @@
         </div>
 
         <div class="abilities">
-          <div class="action-parent" v-for="key in abilityKeys">
+          <div class="action-parent" v-for="key in ['move', 'attack', 'defend', 'damage']">
             <div class="action flex row">
               <div class="action-badge">
                 <md-icon :class="`hc ${getBadgeClass(key)}`"></md-icon>
@@ -56,7 +56,7 @@
 import isNil from 'lodash/isNil';
 import AbilityBadge from '../widgets/AbilityBadge';
 import {getBadge} from '../clixbox/resolvers';
-import {ATTACK, DAMAGE, DEFEND, MOVE, SPEED, ALL} from '../../constants';
+import {ATTACK, DAMAGE, DEFENSE, DEFEND, MOVE, SPEED, ALL} from '../../constants';
 
 export default {
   name: 'clix-viewer',
@@ -101,7 +101,8 @@ export default {
     getCustomAbility: function(key) {
       return this.clix.customAbilities.find((ca) => {
         return (ca.category.toLowerCase() === key ||
-          (ca.category === SPEED && key === MOVE.toLowerCase()));
+          (ca.category === SPEED && key === MOVE.toLowerCase()) ||
+          (ca.category === DEFENSE && key === DEFEND.toLowerCase()));
       });
     },
     refresh: function() {

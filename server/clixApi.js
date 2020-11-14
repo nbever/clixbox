@@ -4,51 +4,8 @@ const S = require('../constants');
 
 const isNil = require('lodash/isNil');
 
-const getClix = async function(params) {
-  const clix = await Clix.find().populate('enhancements');
-  return clix;
-};
-
-const getAClix = async function(id) {
-  const clix = await Clix.findOne(
-    {_id: new mongoose.Types.ObjectId(id)});
-  return clix;
-};
-
-const deleteAClix = async function(id) {
-  await Clix.deleteOne({_id: new mongoose.Types.ObjectId(id)});
-  return {status: 'Success'};
-};
-
-const updateClix = async function(id, newClixData) {
-  const newClix = await Clix.findOneAndReplace(
-    {_id: new mongoose.Types.ObjectId(id)},
-    newClixData
-  );
-
-  const updatedClix = await Clix.findById(id);
-
-  return updatedClix;
-}
-
-const isImageInUse = async function(imageName) {
-  const clix = await Clix.findOne(
-    {image: imageName});
-
-  return {image: imageName, used: !isNil(clix)};
-};
-
-const createClix = async function(clix) {
-  const oldClix = await Clix.findOne({
-    name: clix.name,
-    model: clix.model,
-    release: clix.release
-  });
-
-  if (!isNil(oldClix) && oldClix !== {}) {
-    throw new Error('Clix already exists.');
-  }
-
+const fixClixForSave = async function(clix) {
+  
   if (!isNil(clix.enhancements)) {
     const oIds = clix.enhancements.map((en) => {
       return new mongoose.Types.ObjectId(en._id);
@@ -82,6 +39,59 @@ const createClix = async function(clix) {
     replacer(c, 'defend');
     replacer(c, 'damage');
   });
+
+  return clix;
+};
+
+const getClix = async function(params) {
+  const clix = await Clix.find().populate('enhancements');
+  return clix;
+};
+
+const getAClix = async function(id) {
+  const clix = await Clix.findOne(
+    {_id: new mongoose.Types.ObjectId(id)});
+  return clix;
+};
+
+const deleteAClix = async function(id) {
+  await Clix.deleteOne({_id: new mongoose.Types.ObjectId(id)});
+  return {status: 'Success'};
+};
+
+const updateClix = async function(id, newClixData) {
+
+  const fixedClix = await fixClixForSave(newClixData);
+
+  const newClix = await Clix.findOneAndReplace(
+    {_id: new mongoose.Types.ObjectId(id)},
+    newClixData
+  );
+
+  const updatedClix = await Clix.findById(id);
+
+  return updatedClix;
+}
+
+const isImageInUse = async function(imageName) {
+  const clix = await Clix.findOne(
+    {image: imageName});
+
+  return {image: imageName, used: !isNil(clix)};
+};
+
+const createClix = async function(clix) {
+  const oldClix = await Clix.findOne({
+    name: clix.name,
+    model: clix.model,
+    release: clix.release
+  });
+
+  if (!isNil(oldClix) && oldClix !== {}) {
+    throw new Error('Clix already exists.');
+  }
+
+  clix = await fixClixForSave(clix);
 
   const newClix = await Clix.create(clix);
   return newClix;

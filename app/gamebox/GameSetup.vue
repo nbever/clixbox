@@ -20,6 +20,9 @@
             >
             </player-team-selector>
           </div>
+          <div class="start">
+            <md-button class="md-raised" :disabled="!canStart" :click="startGame">Start</md-button>
+          </div>
         </div>
       </div>
 
@@ -73,6 +76,11 @@
       }
     },
     computed: {
+      canStart: function() {
+        return this.players.every((player) => {
+          return this.getClix(player).length > 0;
+        });
+      },
       currentTreeSelection: function() {
         return {player: this.selectedPlayer, click: this.selectedClix};
       },
@@ -126,6 +134,37 @@
       deleteClix: function(player, clixIndex) {
         const clix = this.getClix(player);
         clix.splice(clixIndex, 1);
+      },
+      startGame: function() {
+
+        const teams = Object.keys(this.clixDict).map((playerName) => {
+          return {
+            player: playerName,
+            roster: this.clixDict[playerName].map((clix) => {
+              return {
+                onClick: 1,
+                actionTokens: 0,
+                knockedOut: false,
+                notes: '',
+                clix: clix._id
+              };
+            })
+          };
+        });
+
+        const game = {
+          name: this.name,
+          cost: this.cost,
+          teams: teams,
+          turn: 0
+        };
+
+        const start = async () => {
+          const newGame = await this.createGame(game);
+          this.$router.push(`/game/${newGame._id}`);
+        };
+
+        start();
       }
     },
     mounted: function() {
@@ -133,6 +172,9 @@
         const clix = await this.getAllClix();
         this.availableClix = Object.keys(clix).map((key) => {
           return clix[key];
+        })
+        .filter((c) => {
+          return c.name === 'fool';
         });
 
         this.selectedPlayer = this.players[0];
@@ -178,6 +220,10 @@
     flex-wrap: wrap;
     padding: 8px;
     cursor: pointer;
+  }
+
+  .start {
+    text-align: center;
   }
 
 </style>

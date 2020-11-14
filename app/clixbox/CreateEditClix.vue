@@ -78,8 +78,9 @@
             label="Range"
             :value="clix.range"
             :keyup="change('range')"
+            :click="change('range')"
             type="number"
-            :inputProps="{min: 0, max: 10}"
+            :inputProps="{min: 2, max: 10}"
           >
           </clix-text-field>
 
@@ -173,6 +174,7 @@
     DEFEND,
     DAMAGE,
     ATTACK,
+    TINY,
     ALL
   } from '../../constants';
 
@@ -295,10 +297,15 @@
             rangeTargets: clix.rangeTargets
           };
 
-          this.badgeKeywords[MOVE.toLowerCase()] = await getBadge(clix, MOVE, this);
-          this.badgeKeywords[DEFEND.toLowerCase()] = await getBadge(clix, DEFEND, this);
-          this.badgeKeywords['range'] = await getBadge(clix, ATTACK, this);
-          this.badgeKeywords[DAMAGE.toLowerCase()] = await getBadge(clix, DAMAGE, this);
+          const moveBadge = await getBadge(clix, MOVE, this);
+          const defendBadge = await getBadge(clix, DEFEND, this);
+          const rangeBadge = await getBadge(clix, ATTACK, this);
+          const damageBadge = await getBadge(clix, DAMAGE, this);
+
+          this.badgeKeywords[MOVE.toLowerCase()] = moveBadge;
+          this.badgeKeywords['defense'] = defendBadge;
+          this.badgeKeywords['range'] = rangeBadge;
+          this.badgeKeywords[DAMAGE.toLowerCase()] = damageBadge;
 
           this.customAbilities = 
             await Promise.all(clix.customAbilities.map(async (ca) => {
@@ -344,6 +351,8 @@
 
             return clickRow;
           }));
+
+          await this.badgeSelected(MOVE.toLowerCase())(moveBadge);
         }
       };
 
@@ -362,6 +371,11 @@
         return async (keyword) => {
         
           this.badgeKeywords[key] = keyword;
+
+          if (key === 'range') {
+            this.clix.range = parseInt(keyword.id) > 1 ?
+              6 : 0;
+          }
 
           const keywordsEnhancements = await keywordsToEnhancements(
             this.badgeKeywords, this.enhancements, this);
@@ -437,10 +451,43 @@
             return;
           }
 
+          const attackBadgeId = parseInt(this.badgeKeywords.range.id);
+
+          const keywords = [];
+          const K_TINY = await this.getKeywordByName(TINY);
+          const K_GREAT_SIZE = await this.getKeywordByName(GREAT_SIZE);
+          const K_GIANT_REACH = await this.getKeywordByName(GIANT_REACH);
+          const K_COLOSSAL = await this.getKeywordByName(COLOSSAL_STAMINA);
+          const K_INDOMITABLE = await this.getKeywordByName(INDOMITABLE);
+
+          if (this.badgeKeywords['damage'].id === ID_TINY) {
+            keywords.push(K_TINY);
+          }
+
+          if (this.badgeKeywords['damage'].id === ID_LARGE ||
+            this.badgeKeywords['damage'].id === ID_COLOSSAL) {
+            keywords.push(K_GREAT_SIZE);
+            keywords.push(K_GIANT_REACH);
+          }
+
+          if (this.badgeKeywords['damage'].id === ID_COLOSSAL) {
+            keywords.push(K_COLOSSAL);
+          }
+
+          if (!isNil(this.badgeKeywords['defense'].term)) {
+            keywords.push(this.badgeKeywords['defense']);
+          }
+
+          if (!isNil(this.badgeKeywords['move'].term)) {
+            keywords.push(this.badgeKeywords['move']);
+          }
+
           const saver = {
             ...this.clix,
+            rangeTargets: attackBadgeId === 1 || attackBadgeId === 3 ? 2 :
+              attackBadgeId === 4 ? 3 : 1, 
             customAbilities: this.customAbilities,
-            keywords: this.badgeKeywords,
+            keywords: keywords,
             enhancements: this.enhancements,
             clix: this.clicks
           };

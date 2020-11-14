@@ -124,11 +124,17 @@ const ClixApi = {
           const games = await genericLoader('/api/games', this.$root);
           return games;
         },
-        saveGame: async function(game) {
-
+        getGame: async function(gameId) {
+          const game = await genericLoader(`/api/game/${gameId}`, this.$root);
+          return game;
+        },
+        createGame: async function(game) {
+          await clixFetch(this.$root, '/api/game', 'POST', game);
+          return;
         },
         updateGame: async function(game, id) {
-
+          const savedGame = await clixFetch(this.$root, `/api/game/${id}`, 'PUT', game);
+          return savedGame;
         }
       }
     });

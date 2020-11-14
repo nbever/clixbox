@@ -112,7 +112,7 @@ import AbilityBuilder from '../widgets/AbilityBuilder';
 import KeywordBuilder from '../widgets/KeywordBuilder';
 import EnhancementSetter from '../widgets/EnhancementSetter';
 import clone from 'lodash/clone';
-import {DEFENSE, ATTACK, SPEED, DAMAGE, MOVE, TARGET} from
+import {DEFENSE, ATTACK, SPEED, DAMAGE, MOVE, TARGET, DEFEND} from
   '../../constants';
 
 import {rationalizeEnhancementList, keywordsToEnhancements}
@@ -141,31 +141,33 @@ export default {
     KeywordBuilder,
     EnhancementSetter
   },
-  mounted: function() {
-    const fx = async () => {
-      const allEns = await this.getEnhancements();
-      this.possibleEnhancements = Object.values(allEns);
+  watch: {
+    customAbilities: function() {
+      const fx = async () => {
+        const allEns = await this.getEnhancements();
+        this.possibleEnhancements = Object.values(allEns);
 
-      this.customAbilities.forEach( (ability) => {
-        const cat = ability.category;
-        const badge = cat === SPEED ?
-          this.moveBadge
-          :
-          cat === DAMAGE ?
-            this.damageBadge
+        this.customAbilities.forEach( (ability) => {
+          const cat = ability.category;
+          const badge = cat === SPEED || cat === MOVE?
+            this.moveBadge
             :
-            cat === DEFENSE ?
-              this.defenseBadge
+            cat === DAMAGE ?
+              this.damageBadge
               :
-              cat === TARGET ?
-                this.attackBadge
+              cat === DEFENSE || cat === DEFEND ?
+                this.defenseBadge
                 :
-                ALWAYS;
-        ability.badge = badge;
-      });
-    };
+                cat === TARGET ?
+                  this.attackBadge
+                  :
+                  ALWAYS;
+          ability.badge = badge;
+        });
+      };
 
-    fx();
+      fx();
+    }
   },
   computed: {
     moveEnhancements: function() {

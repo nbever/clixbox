@@ -1,5 +1,5 @@
 <template>
-  <div class="go-home flex row rounded">
+  <div class="go-home flex row rounded stiff">
     <div class="breadcrumb flex row rounded" @click="gohome">
       <md-icon class="mycons mycons-home2 md-mini md-dense"></md-icon>
       <div class="text">Home</div>

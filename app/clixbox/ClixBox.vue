@@ -10,7 +10,7 @@
     </md-dialog-confirm>
     <div class="search">
     </div>
-    <div class="results">
+    <div class="results flex column">
       <go-home :crumbs="crumbs"></go-home>
       <div>
         <md-button class="md-icon-button md-primary" @click="create">

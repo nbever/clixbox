@@ -45,6 +45,22 @@ export const keywordsToEnhancements = async (badgeKeywords, enhancements, api) =
       enhancementList.push(...stamina.enhancements);
     }
 
+    const flight = await api.getKeywordByName(FLIGHT);
+    const swim = await api.getKeywordByName(SWIM);
+    const indomitable = await api.getKeywordByName(INDOMITABLE);
+
+    if (bVal.id === flight._id) {
+      enhancementList.push(...flight.enhancements);
+    }
+
+    if (bVal.id === swim._id) {
+      enhancementList.push(...swim.enhancements);
+    }
+
+    if (bVal.id === indomitable._id) {
+      enhancementList.push(...indomitable.enhancements);
+    }
+
     return {
       ...bVal,
      enhancements: enhancementList 
@@ -166,7 +182,7 @@ export const getBadge = async (clix, category, api) => {
   }
 
   if (category === ATTACK) {
-    if (clix.rangeTargets > 0 && clix.range === 0) {
+    if (clix.rangeTargets > 1 && clix.range === 0) {
       return {
         id: '1',
         label: 'Double',

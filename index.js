@@ -17,6 +17,7 @@ import CreateEditClix from './app/clixbox/CreateEditClix';
 import GameBox from './app/gamebox/GameBox';
 import CreateGame from './app/gamebox/CreateGame';
 import GameSetup from './app/gamebox/GameSetup';
+import GameView from './app/game/GameView';
 
 Vue.use(VueMaterial);
 Vue.use(VTooltip);
@@ -32,6 +33,12 @@ const router = new VueRouter({
     {path: '/clixbox/edit/:clixId', name: 'edit', component: EditClix, props: true},
     {path: '/', redirect: {name: 'home'}},
     {path: '/gamebox/create', name: 'gamebox_create', component: CreateGame},
+    {path: '/game/:gameId', name:'game', component: GameView, props: (route) => {
+      return {
+        ...route.query,
+        gameId: decodeURIComponent(route.query.gameId)
+      };
+    }},
     {path: '/gamebox/setup', component: GameSetup, props: (route) => {
       return {
         ...route.query, 
