@@ -21,7 +21,7 @@
             </player-team-selector>
           </div>
           <div class="start">
-            <md-button class="md-raised" :disabled="!canStart" :click="startGame">Start</md-button>
+            <md-button class="md-raised" :disabled="!canStart" @click="startGame">Start</md-button>
           </div>
         </div>
       </div>
@@ -156,7 +156,7 @@
           name: this.name,
           cost: this.cost,
           teams: teams,
-          turn: 0
+          turn: teams[0].player
         };
 
         const start = async () => {
@@ -172,9 +172,6 @@
         const clix = await this.getAllClix();
         this.availableClix = Object.keys(clix).map((key) => {
           return clix[key];
-        })
-        .filter((c) => {
-          return c.name === 'fool';
         });
 
         this.selectedPlayer = this.players[0];

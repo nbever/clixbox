@@ -36,7 +36,7 @@ const router = new VueRouter({
     {path: '/game/:gameId', name:'game', component: GameView, props: (route) => {
       return {
         ...route.query,
-        gameId: decodeURIComponent(route.query.gameId)
+        gameId: decodeURIComponent(route.params.gameId)
       };
     }},
     {path: '/gamebox/setup', component: GameSetup, props: (route) => {

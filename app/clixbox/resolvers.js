@@ -154,6 +154,7 @@ export const getBadge = async (clix, category, api) => {
 
 
   if (category === MOVE) {
+    
     const hasSwim = await hasKeyword(SWIM);
 
     if (!isNil(hasSwim)) {
