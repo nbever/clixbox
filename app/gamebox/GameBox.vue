@@ -8,7 +8,7 @@
       </md-button>
     </div>
     <md-table v-model="games" md-sort="name" md-sort-order="asc" md-card>
-      <md-table-row slot="md-table-row" slot-scope="{item}">
+      <md-table-row slot="md-table-row" slot-scope="{item}" class="pointer" @click="goToGame(item._id)">
         <md-table-cell md-label="Name" md-sort-by="name">{{item.name}}</md-table-cell>
         <md-table-cell md-label="# of Players" md-sort-by="teams.length" md-numeric>{{item.teams.length}}</md-table-cell>
         <md-table-cell md-label="Actions">
@@ -55,14 +55,22 @@
 
         fx();
       },
+      goToGame: function(id) {
+        this.$router.push(`/game/${id}`);
+      },
       create: function() {
         this.$router.push('/gamebox/create');
       },
       editThis: function(id) {
-
+        this.goToGame(id);
       },
       deleteThis: function(id) {
+        const doIt = async () => {
+          await this.deleteGame(id);
+          this.refresh();
+        };
 
+        doIt();
       }
     }
   }
@@ -71,9 +79,12 @@
 <style lang="scss" scoped>
   @import '../../variables';
 
-
   .gamebox {
     padding: 12px;
     width: 100%;
+  }
+
+  .pointer {
+    cursor: pointer;
   }
 </style>

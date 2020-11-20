@@ -1,5 +1,6 @@
 <template>
   <div class="game-view flex column hidden">
+    <GoHome :crumbs="crumbs"></GoHome>
     <div class="title stiff middle">{{gameName}}</div>
     <div class="player-marker stiff"></div>
     <div class="clix-status grow auto">
@@ -22,14 +23,13 @@
             <clix-card v-for="clix in team.roster" 
               :clix="clix.clix" 
               :clixStatus="clix"
-              :takeDamage="takeDamage(clix)"
-              :heal="heal(clix)"
+              :takeDamage="takeDamage(clix, team)"
+              :heal="heal(clix, team)"
             >
             </clix-card>
           </div>
         </md-tab>
       </md-tabs>
-      <div class="long"/>
     </div>
   </div>
 </template>
@@ -37,18 +37,27 @@
 <script>
   import isNil from 'lodash/isNil';
   import ClixCard from '../widgets/ClixCard';
+  import GoHome from '../widgets/GoHome';
 
   export default {
     name: 'game-view',
     components: {
-      ClixCard
+      ClixCard,
+      GoHome
     },
     props: {
       gameId: String
     },
     data: function() {
       return {
-        game: null
+        game: null,
+        crumbs: [{
+          link: '/gamebox',
+          label: 'Game Box'
+        }, {
+          link: `/game/${this.gameId}`,
+          label: 'Game'
+        }]
       };
     },
     computed: {
@@ -57,15 +66,40 @@
       }
     },
     methods: {
-      takeDamage: function(clix) {
+      takeDamage: function(clix, team) {
         return () => {
+          if (clix.onClick > clix.clix.clix.length) {
+            return;
+          }
 
+          clix.onClick = clix.onClick + 1;
+          const clixIndex = team.roster.findIndex((c) => {
+            return c.clix._id === clix.clix._id;
+          });
+
+          this.$set(team.roster, clixIndex, clix);
+
+          this.saveGame();
         };
       },
-      heal: function(clix) {
+      heal: function(clix, team) {
         return () => {
+          if (clix.onClick === 1) {
+            return;
+          }
 
+          clix.onClick = clix.onClick - 1;
+          const clixIndex = team.roster.findIndex((c) => {
+            return c.clix._id === clix.clix._id;
+          });
+
+          this.$set(team.roster, clixIndex, clix);
+
+          this.saveGame();
         };
+      },
+      saveGame: function() {
+        this.updateGame(this.game, this.gameId);
       }
     },
     mounted: function() {
@@ -92,6 +126,10 @@
 <style lang="scss" scoped>
   @import '../../variables';
 
+  .game-view {
+    padding: 12px;
+  }
+
   .active {
     position: absolute;
     top: 12px;
@@ -104,11 +142,6 @@
 
   .clix-status {
     background-color: white;
-  }
-
-  .long {
-    height: 1000px;
-    background-color: green;
   }
 
   .title {

@@ -135,6 +135,9 @@ const ClixApi = {
         updateGame: async function(game, id) {
           const savedGame = await clixFetch(this.$root, `/api/game/${id}`, 'PUT', game);
           return savedGame;
+        },
+        deleteGame: async function(gameId) {
+          await clixFetch(this.$root, `/api/game/${gameId}`, 'DELETE');
         }
       }
     });

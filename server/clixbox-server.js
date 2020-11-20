@@ -147,7 +147,7 @@ app.put('/api/game/:id', async (req, resp, next) => {
 app.delete('/api/game/:id', async (req, resp, next) => {
   reqHandler(async () => {
     await gamesApi.deleteGame(req.params.id);
-    return resp.send('OK');
+    return resp.json({status: 'Success'});
   }, next)
 });
 

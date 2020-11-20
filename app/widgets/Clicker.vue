@@ -14,7 +14,7 @@
     </div>
 
     <svg width="200" height="100" viewBox="0 0 200 100">
-      <path fill="black" d="M0 0 A100 100 45 1 0 200 0 M85 10 L105 10 L105 60 L105 60 L125 60 L125 85 L85 85 Z">
+      <path fill="black" d="M0 0 A100 100 45 1 0 200 0 M85 10 L108 10 L108 60 L108 60 L125 60 L125 88 L85 88 Z">
       </path>
     </svg>
 
@@ -30,10 +30,10 @@
     </div>
 
     <div class="click-values">
-      <div class="click-value">{{getValue('move')}}</div>
-      <div class="click-value">{{getValue('attack')}}</div>
-      <div class="click-value">{{getValue('defend')}}</div>
-      <div class="click-value damage-value">{{getValue('damage')}}</div>
+      <div class="click-value" :style="getStyle('move')">{{getValue('move')}}</div>
+      <div class="click-value" :style="getStyle('attack')">{{getValue('attack')}}</div>
+      <div class="click-value" :style="getStyle('defend')">{{getValue('defend')}}</div>
+      <div class="click-value damage-value" :style="getStyle('damage')">{{getValue('damage')}}</div>
     </div>
 
   </div>
@@ -48,7 +48,8 @@
       click: Object,
       takeDamage: Function,
       heal: Function,
-      badges: Object
+      badges: Object,
+      abilities: Object
     },
     computed: {
       getFlightModifier: function() {
@@ -69,6 +70,19 @@
           18
           :
           this.click[key].value;
+      },
+      getStyle: function(key) {
+        return isNil(this.abilities) || 
+          isNil(this.abilities[key]) ?
+          {}
+          :
+          this.abilities[key].category === 'CUST' ?
+            {border: '1px solid #e1e1e1'}
+            :
+            {
+              backgroundColor: this.abilities[key].color,
+              color: 'white'
+            };
       }
     }
   };
@@ -110,17 +124,18 @@
   .click-values {
     position: absolute;
     top: 13px;
-    left: 86px;
+    left: 88px;
   }
 
   .click-value {
-    padding-bottom: 5px;
+    margin-bottom: 5px;
+    width: 16px;
   }
 
   .damage-value {
     position: absolute;
     left: 20px;
-    bottom: 0px;
+    bottom: 1px;
   }
 
   .take-damage {
