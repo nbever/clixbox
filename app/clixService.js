@@ -59,6 +59,12 @@ const ClixApi = {
           const abilities = await this.getAbilities();
           return abilities[id];          
         },
+        getAbilityByAction: async function(action) {
+          const abilities = await this.getAbilities();
+          return Object.values(abilities).find((a) => {
+            return a.action === action;
+          });
+        },
         getKeywords: async function() {
           if (isNil(keywords)) {
             keywords = await genericLoader(

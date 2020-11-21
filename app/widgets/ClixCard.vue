@@ -25,7 +25,70 @@
           <div v-if="isPresent(key)" class="flex row">
             <div class="orb stiff" :style="getAbilityStyle(key)">
             </div>
-            <div class="grow">{{getAbilityText(key)}}</div>
+            <div class="grow">
+              <div>{{getAbilityText(key)}}</div>
+              <div 
+                v-if="hasIt(key, 'extraAbilities')"
+                
+              >
+                <div class="bold">Extra Abilities:</div>
+                <div v-for="extraAbility in extraAbilities[key.toLowerCase()]">
+                  {{extraAbility.text}}
+                </div>
+              </div>
+
+              <div
+                v-if="hasIt(key, 'enhancements')"
+              >
+                <div class="bold">Enhancements:</div>
+                <div 
+                  v-for="enhancement in enhancements[key.toLowerCase()]"
+                  class="flex row"
+                >
+                  <div class="orb" :style="{backgroundColor: enhancement.color}">
+                  </div>
+                  <div>{{enhancement.text}}</div>
+                </div>
+              </div>
+
+              <div
+                v-if="hasIt(key, 'keywords')"
+              >
+                <div class="bold">Keywords</div>
+                <div v-for="keyword in keywords[key.toLowerCase()]"
+                  class="flex row"
+                >
+                  <div class="pad-right">{{keyword.term}}:</div>
+                  <div>{{keyword.text}}</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="specials grow" v-if="hasSpecials">
+        <div class="enhancements" v-if="hasGlobalEnhancements">
+          <div class="bold">
+            Enhancements
+          </div>
+          <div
+            v-for="enhancement in globalEnhancements"
+            class="flex row"
+          >
+            <div class="orb" :style="{backgroundColor: enhancement.color}">
+            </div>
+            <div>{{enhancement.text}}</div>
+          </div>
+        </div>
+        <div class="keywords" v-if="hasGlobalKeywords">
+          <div class="bold">Keywords</div>
+          <div v-for="keyword in globalKeywords"
+            class="flex row"
+          >
+            <div class="pad-right">{{keyword.term}}:</div>
+            <div>{{keyword.text}}</div>
           </div>
         </div>
       </div>
@@ -55,31 +118,112 @@
       return {
         badges: {},
         badgeKeys: [MOVE, ATTACK, DAMAGE, DEFEND],
-        abilities: {}
+        abilities: {},
+        extraAbilities: {},
+        enhancements: {},
+        keywords: {},
+        globalEnhancements: [],
+        globalKeywords: []
       };
     },
     computed: {
       currentClick: function() {
         return this.clix.clix[this.clixStatus.onClick - 1];
+      },
+      hasSpecials: function() {
+        return this.hasGlobalKeywords || this.hasGlobalEnhancements;
+      },
+      hasGlobalEnhancements: function() {
+        return !isNil(this.globalEnhancements) && this.globalEnhancements.length > 0;
+      },
+      hasGlobalKeywords: function() {
+        return !isNil(this.globalKeywords) && this.globalKeywords.length > 0;
       }
     },
     watch: {
-      moveAbility: function(value) {
-        alert(JSON.stringify(value));
-      },
       currentClick: function(click) {
         this.fixAbilities(click);
+        this.fixExtras();
       }
     },
     methods: {
+      fixGlobals: function() {
+
+        const doIt = async () => {
+          const gEnhancements = await Promise.all(this.clix.enhancements.map(async (e) => {
+            const en = await this.getEnhancement(e);
+            return en;
+          }));
+
+          const gKeywords = await Promise.all(this.clix.keywords.map(async (k) => {
+            const ky = await this.getKeyword(k.keyword);
+            return ky;
+          }));
+
+          this.globalKeywords = gKeywords;
+          this.globalEnhancements = gEnhancements;
+        };
+
+        doIt();
+      },
+      fixExtras: function() {
+        const doIt = async () => {
+
+          Object.keys(this.abilities).forEach( async (key) => {
+            const rawExtraAbilities = this.abilities[key].abilities;
+            const rawEnhancements = this.abilities[key].enhancements;
+            const rawKeywords = this.abilities[key].keywords;
+
+            if (!isNil(rawExtraAbilities)) {
+              const extraAbilities = await Promise.all(rawExtraAbilities.map( async (re) => {
+                const realAbility = await this.getAbilityByAction(re.action);
+                return realAbility;
+              }));
+
+              this.$set(this.extraAbilities, key, extraAbilities);
+            }
+
+            if (!isNil(rawEnhancements)) {
+              const enhancements = await Promise.all(rawEnhancements.map( async (re) => {
+                const realEnhancement = await this.getEnhancement(re);
+                return realEnhancement;
+              }));
+
+              this.$set(this.enhancements, key, enhancements);
+            }
+
+            if (!isNil(rawKeywords)) {
+              const keywords = await Promise.all(rawKeywords.map( async (re) => {
+                const realKeyword = await this.getKeywordByName(re.keyword);
+                return realKeyword;
+              }));
+
+              this.$set(this.keywords, key, keywords);
+            }
+          });
+
+          this.fixGlobals();
+        };
+
+        doIt();
+      },
       fixAbilities: function(click) {
         const findIt = async () => {
+
+          if (isNil(click)) {
+            return;
+          }
+
           const keys = Object.keys(click).filter((key) => {
             return key !== '_id' && key !== 'ordinal';
           });
 
           for (let i = 0; i < keys.length; i++) {
             const ability = await this.getAbility(click[keys[i]].ability);
+
+            if (isNil(ability)) {
+              continue;
+            }
 
             if (ability.category === 'CUST') {
               const customAbility = this.clix.customAbilities.find((ca) => {
@@ -89,7 +233,8 @@
               });
 
               if (!isNil(customAbility)) {
-                ability.text = customAbility.text;
+                this.$set(this.abilities, keys[i], customAbility);
+                continue;
               }
             }
 
@@ -122,6 +267,10 @@
           {}
           :
           {backgroundColor: this.abilities[lKey].color};
+      },
+      hasIt: function(hkey, datakey) {
+        const things = this[datakey][hkey.toLowerCase()];
+        return !isNil(things) && things.length > 0;
       }
     },
     mounted: function() {
@@ -132,6 +281,7 @@
           this.$set(this.badges, key + '', badge);
 
           this.fixAbilities(this.currentClick)
+          this.fixExtras();
         }
       }
 
@@ -170,6 +320,10 @@
 
   .stat {
     padding: 8px;
+  }
+
+  .pad-right {
+    padding-right: 4px;
   }
 
   .orb {

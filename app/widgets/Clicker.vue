@@ -30,10 +30,14 @@
     </div>
 
     <div class="click-values">
-      <div class="click-value" :style="getStyle('move')">{{getValue('move')}}</div>
-      <div class="click-value" :style="getStyle('attack')">{{getValue('attack')}}</div>
-      <div class="click-value" :style="getStyle('defend')">{{getValue('defend')}}</div>
-      <div class="click-value damage-value" :style="getStyle('damage')">{{getValue('damage')}}</div>
+      <div 
+        v-for="key in ['move', 'attack', 'defend', 'damage']"
+        :style="getStyle(key)"
+        :class="{ 'click-value' : true, 'damage-value': key === 'damage'}"
+      >
+        <div>{{getValue(key)}}</div>
+        <div></div>
+      </div>
     </div>
 
   </div>
@@ -67,16 +71,22 @@
       },
       getValue: function(key) {
         return isNil(this.click) || isNil(this.click[key]) ?
-          18
+          'KO'
           :
           this.click[key].value;
       },
       getStyle: function(key) {
+
+        if (this.getValue(key) === 'KO') {
+          return {color: 'red !important', fontWeight: 'bold'};
+        }
+
         return isNil(this.abilities) || 
           isNil(this.abilities[key]) ?
           {}
           :
-          this.abilities[key].category === 'CUST' ?
+          this.abilities[key].category === 'CUST' || 
+            this.abilities[key].color === 'white' ?
             {border: '1px solid #e1e1e1'}
             :
             {
