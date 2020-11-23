@@ -19,12 +19,19 @@
           :md-label="team.player"
           :md-template-data="{ active: game.turn === team.player }"
         >
+          <div class="done">
+            <md-button class="md-button" @click="finishTurn">
+              Complete Turn
+            </md-button>
+          </div>
           <div class="flex row">
             <clix-card v-for="clix in team.roster" 
               :clix="clix.clix" 
               :clixStatus="clix"
               :takeDamage="takeDamage(clix, team)"
               :heal="heal(clix, team)"
+              :clearTokens="clearTokens(clix, team)"
+              :addToken="addToken(clix, team)"
             >
             </clix-card>
           </div>
@@ -66,19 +73,24 @@
       }
     },
     methods: {
+      findClixIndex: function(roster, id) {
+        return roster.findIndex((c) => {
+          return c.clix._id === id;
+        });
+      },
       takeDamage: function(clix, team) {
         return () => {
-          if (clix.onClick > clix.clix.clix.length) {
-            return;
+          
+          const clixIndex = this.findClixIndex(team.roster, clix.clix._id);
+
+          if (clix.onClick >= clix.clix.clix.length) {
+            clix.knockedOut = true;
+          }
+          else {
+            clix.onClick = clix.onClick + 1;
           }
 
-          clix.onClick = clix.onClick + 1;
-          const clixIndex = team.roster.findIndex((c) => {
-            return c.clix._id === clix.clix._id;
-          });
-
           this.$set(team.roster, clixIndex, clix);
-
           this.saveGame();
         };
       },
@@ -89,14 +101,52 @@
           }
 
           clix.onClick = clix.onClick - 1;
-          const clixIndex = team.roster.findIndex((c) => {
-            return c.clix._id === clix.clix._id;
-          });
+          clix.knockedOut = false;
+          const clixIndex = this.findClixIndex(team.roster, clix.clix._id);
 
           this.$set(team.roster, clixIndex, clix);
 
           this.saveGame();
         };
+      },
+      clearTokens: function(clix, team) {
+        return () => {
+          const clixIndex = this.findClixIndex(team.roster, clix.clix._id);
+          clix.actionTokens = [];
+          this.$set(team.roster, clixIndex, clix);
+          this.saveGame();
+        };
+      },
+      addToken: function(clix, team) {
+        return () => {
+          const clixIndex = this.findClixIndex(team.roster, clix.clix._id);
+          clix.actionTokens.push({age: 0});
+          this.$set(team.roster, clixIndex, clix);
+          this.saveGame();
+        };
+      },
+      finishTurn: function() {
+
+        const turnIndex = this.game.teams.findIndex((team) => {
+          return team.player === this.game.turn;
+        });
+
+        this.game.teams[turnIndex].roster
+          .forEach((clix) => {
+            clix.actionTokens = clix.actionTokens
+              .filter((token) => {
+                return token.age < 1;
+              })
+              .map((keepToken) => {
+                return {
+                  age: keepToken.age + 1
+                };
+              });
+          });
+
+        const nextTurn = (turnIndex + 1) % this.game.teams.length;
+        this.$set(this.game, 'turn', this.game.teams[nextTurn].player);
+        this.saveGame();
       },
       saveGame: function() {
         this.updateGame(this.game, this.gameId);

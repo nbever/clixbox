@@ -1,20 +1,39 @@
 <template>
-  <div class="clix-card">
-    <div class="name">{{clix.name}}</div>
+  <div class="clix-card flex column" :style="koStyle">
+    <div class="name stiff">{{clix.name}}</div>
 
-    <div class="container flex row">
+    <div class="container flex row grow">
 
-      <div class="image-box">
+      <div class="image-box flex column">
         <div class="image grow" :style="{backgroundImage: `url(/images/${clix.image})`}">
         </div>
         <clicker 
-          :click="currentClick" 
+          :click="currentClick"
+          :clickIndex="clixStatus.onClick"
           :badges="badges"
           :takeDamage="takeDamage"
           :heal="heal"
           :abilities="abilities"
         >
         </clicker>
+        <div class="actions grow">
+          <div class="bold">Action Tokens</div>
+          <div class="flex row">
+            <div 
+              v-for="token in clixStatus.actionTokens"
+              class="token"
+            >
+            </div>
+          </div>
+          <div class="action-buttons">
+            <md-button @click="addToken" class="md-icon-button">
+              <md-icon class="mycons mycons-plus"></md-icon>
+            </md-button>
+            <md-button @click="clearTokens" class="md-icon-button">
+              <md-icon class="mycons mycons-cancel-circle"></md-icon>
+            </md-button>
+          </div>
+        </div>
       </div>
 
       <div class="stat-box grow">
@@ -55,7 +74,8 @@
                 v-if="hasIt(key, 'keywords')"
               >
                 <div class="bold">Keywords</div>
-                <div v-for="keyword in keywords[key.toLowerCase()]"
+                <div 
+                  v-for="keyword in keywords[key.toLowerCase()]"
                   class="flex row"
                 >
                   <div class="pad-right">{{keyword.term}}:</div>
@@ -109,7 +129,9 @@
       clix: Object,
       clixStatus: Object,
       takeDamage: Function,
-      heal: Function
+      heal: Function,
+      addToken: Function,
+      clearTokens: Function
     },
     components: {
       Clicker
@@ -138,6 +160,10 @@
       },
       hasGlobalKeywords: function() {
         return !isNil(this.globalKeywords) && this.globalKeywords.length > 0;
+      },
+      koStyle: function() {
+        return this.clixStatus.knockedOut ?
+          {opacity: 0.7} : {};
       }
     },
     watch: {
@@ -298,19 +324,19 @@
     padding: 8px;
     border: 1px solid $light-gray;
     border-radius: 6px;
-    min-height: 290px
+    min-height: 340px
   }
 
   .image {
     width: 100%;
-    height: 100%;
+    min-height: 140px;
     background-size: contain;
     background-repeat: no-repeat;
   }
 
   .image-box {
     width: 200px;
-    height: 150px;
+    min-height: 150px;
   }
 
   .stat-box {
@@ -332,5 +358,13 @@
     border-radius: 10px;
     border: 1px solid $light-gray;
     margin-right: 4px;
+  }
+
+  .token {
+    width: 48px;
+    height: 48px;
+    background-color: $blue;
+    border-radius: 26px;
+    border: 4px solid $middle-gray;
   }
 </style>

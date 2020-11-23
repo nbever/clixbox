@@ -143,7 +143,7 @@
             roster: this.clixDict[playerName].map((clix) => {
               return {
                 onClick: 1,
-                actionTokens: 0,
+                actionTokens: [],
                 knockedOut: false,
                 notes: '',
                 clix: clix._id

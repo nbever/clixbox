@@ -1,5 +1,5 @@
 <template>
-  <div class="clicker">
+  <div class="clicker stiff">
 
     <div class="take-damage">
       <md-button @click="takeDamage" class="md-icon-button">
@@ -17,6 +17,8 @@
       <path fill="black" d="M0 0 A100 100 45 1 0 200 0 M85 10 L108 10 L108 60 L108 60 L125 60 L125 88 L85 88 Z">
       </path>
     </svg>
+
+    <div class="clix-index">{{clickIndex}}</div>
 
     <div class="badges">
       <div :class="`hc ${icon('MOVE')} move badge ${getFlightModifier}`">
@@ -50,6 +52,7 @@
     name: 'clicker',
     props: {
       click: Object,
+      clickIndex: Number,
       takeDamage: Function,
       heal: Function,
       badges: Object,
@@ -158,6 +161,13 @@
     position: absolute;
     right: 53px;
     bottom: -7px;
+  }
+
+  .clix-index {
+    color: white;
+    position: absolute;
+    top: 10px;
+    left: 12px;
   }
 
 </style>

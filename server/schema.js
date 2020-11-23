@@ -62,10 +62,14 @@ const clixSchema = new mongoose.Schema({
   keywords: [keywordPairSchema]
 });
 
+const actionSchema = new mongoose.Schema({
+  age: Number
+});
+
 const clixStatusSchema = new mongoose.Schema({
   clix: {type: mongoose.ObjectId, ref: 'Clix'},
   onClick: Number,
-  actionTokens: Number,
+  actionTokens: [actionSchema],
   knockedOut: Boolean,
   notes: String
 });
@@ -78,7 +82,8 @@ const teamSchema = new mongoose.Schema({
 
 const gameSchema = new mongoose.Schema({
   name: String,
-  teams: [teamSchema]
+  teams: [teamSchema],
+  turn: String
 });
 
 const Games = mongoose.model('Games', gameSchema);
