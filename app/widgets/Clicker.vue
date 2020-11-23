@@ -19,6 +19,7 @@
     </svg>
 
     <div class="clix-index">{{clickIndex}}</div>
+    <div class="clix-range" v-if="range > 1">{{range}}</div>
 
     <div class="badges">
       <div :class="`hc ${icon('MOVE')} move badge ${getFlightModifier}`">
@@ -56,7 +57,8 @@
       takeDamage: Function,
       heal: Function,
       badges: Object,
-      abilities: Object
+      abilities: Object,
+      range: Number
     },
     computed: {
       getFlightModifier: function() {
@@ -168,6 +170,13 @@
     position: absolute;
     top: 10px;
     left: 12px;
+  }
+
+  .clix-range {
+    color: white;
+    position: absolute;
+    top: 39px;
+    left: 43px;
   }
 
 </style>

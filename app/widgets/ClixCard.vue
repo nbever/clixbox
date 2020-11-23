@@ -10,6 +10,7 @@
         <clicker 
           :click="currentClick"
           :clickIndex="clixStatus.onClick"
+          :range="clix.range"
           :badges="badges"
           :takeDamage="takeDamage"
           :heal="heal"
@@ -37,9 +38,12 @@
       </div>
 
       <div class="stat-box grow">
-        <div class="stat flex row" v-for="key in badgeKeys">
+        <div class="stat flex row" v-for="key in badgeKeys"
+          v-if="key !== 'ALL' || isPresent(key)"
+        >
           <div class="action-badge">
-            <md-icon :class="`hc ${getBadgeClass(key)}`"></md-icon>
+            <md-icon :class="`hc ${getBadgeClass(key)}`">
+            </md-icon>
           </div>
           <div v-if="isPresent(key)" class="flex row">
             <div class="orb stiff" :style="getAbilityStyle(key)">
@@ -121,7 +125,7 @@
   import isNil from 'lodash/isNil';
   import Clicker from './Clicker';
   import {getBadge} from '../clixbox/resolvers';
-  import {MOVE, ATTACK, DAMAGE, DEFEND, SPEED, DEFENSE} from '../../constants';
+  import {MOVE, ATTACK, DAMAGE, DEFEND, SPEED, DEFENSE, ALL} from '../../constants';
 
   export default {
     name: 'clix-card',
@@ -139,7 +143,7 @@
     data: function() {
       return {
         badges: {},
-        badgeKeys: [MOVE, ATTACK, DAMAGE, DEFEND],
+        badgeKeys: [MOVE, ATTACK, DAMAGE, DEFEND, ALL],
         abilities: {},
         extraAbilities: {},
         enhancements: {},
@@ -195,34 +199,62 @@
       fixExtras: function() {
         const doIt = async () => {
 
+          const getCustomElements = function(datakey) {
+            return this.getAllConstantCustomAbilities()
+              .reduce((list, ca) => {
+                const newList = list.concat(ca[datakey]);
+                return newList;
+              }, []);
+          };
+
           Object.keys(this.abilities).forEach( async (key) => {
-            const rawExtraAbilities = this.abilities[key].abilities;
-            const rawEnhancements = this.abilities[key].enhancements;
-            const rawKeywords = this.abilities[key].keywords;
+            const rawExtraAbilities = key === ALL ?
+              getCustomElements('abilities')
+              :
+              this.abilities[key].abilities;
+
+            const rawEnhancements = key === ALL ?
+              getCustomElements('enhancements')
+              :
+              this.abilities[key].enhancements;
+
+            const rawKeywords = key === ALL ?
+              getCustomElements('keywords')
+              :
+              this.abilities[key].keywords;
 
             if (!isNil(rawExtraAbilities)) {
-              const extraAbilities = await Promise.all(rawExtraAbilities.map( async (re) => {
-                const realAbility = await this.getAbilityByAction(re.action);
-                return realAbility;
-              }));
+              const extraAbilities = key === ALL ?
+                rawExtraAbilities
+                :
+                await Promise.all(rawExtraAbilities.map( async (re) => {
+                  const realAbility = await this.getAbilityByAction(re.action);
+                  return realAbility;
+                }));
 
               this.$set(this.extraAbilities, key, extraAbilities);
             }
 
             if (!isNil(rawEnhancements)) {
-              const enhancements = await Promise.all(rawEnhancements.map( async (re) => {
-                const realEnhancement = await this.getEnhancement(re);
-                return realEnhancement;
-              }));
+              const enhancements = key === ALL ?
+                rawEnhancements
+                :
+                await Promise.all(rawEnhancements.map( async (re) => {
+                  const realEnhancement = await this.getEnhancement(re);
+                  return realEnhancement;
+                }));
 
               this.$set(this.enhancements, key, enhancements);
             }
 
             if (!isNil(rawKeywords)) {
-              const keywords = await Promise.all(rawKeywords.map( async (re) => {
-                const realKeyword = await this.getKeywordByName(re.keyword);
-                return realKeyword;
-              }));
+              const keywords = key === ALL ?
+                rawKeywords
+                :
+                await Promise.all(rawKeywords.map( async (re) => {
+                  const realKeyword = await this.getKeywordByName(re.keyword);
+                  return realKeyword;
+                }));
 
               this.$set(this.keywords, key, keywords);
             }
@@ -271,21 +303,40 @@
         findIt();
       },
       getBadgeClass: function(key) {
-        return isNil(this.badges[key]) ?
-          ''
+        return key === ALL ?
+          'hc-icon-star'
           :
-          this.badges[key].iconClass;
+          isNil(this.badges[key]) ?
+            ''
+            :
+            this.badges[key].iconClass;
       },
       isPresent: function(key) {
+
+        if (key === ALL) {
+          const allAbilities = this.getAllConstantCustomAbilities();
+          return !isNil(allAbilities) && allAbilities.length > 0;
+        }
+
         return !isNil(this.abilities) &&
           !isNil(this.abilities[key.toLowerCase()])
       },
       getAbilityText: function(key) {
         const lKey = key.toLowerCase();
-        return (isNil(this.abilities) || isNil(this.abilities[lKey])) ?
-          ''
+        return key === ALL ?
+          this.clix.customAbilities
+            .filter((ca) => {
+              return ca.category === ALL;
+            })
+            .map((all) => {
+              return all.text;
+            })
+            .join(' - AND - ')
           :
-          this.abilities[lKey].text;
+          (isNil(this.abilities) || isNil(this.abilities[lKey])) ?
+            ''
+            :
+            this.abilities[lKey].text;
       },
       getAbilityStyle: function(key) {
         const lKey = key.toLowerCase();
@@ -294,7 +345,22 @@
           :
           {backgroundColor: this.abilities[lKey].color};
       },
+      getAllConstantCustomAbilities: function() {
+        return this.clix.customAbilities.filter((ca) => {
+          return ca.category === ALL;
+        });
+      },
       hasIt: function(hkey, datakey) {
+
+        if (hkey === ALL) {
+          const allAbilities = this.getAllConstantCustomAbilities();
+          const matches = allAbilities.filter((a) => {
+            return !isNil(a[datakey]) && a[datakey].length > 0;
+          });
+
+          return !isNil(matches) && matches.length > 0;
+        }
+
         const things = this[datakey][hkey.toLowerCase()];
         return !isNil(things) && things.length > 0;
       }
